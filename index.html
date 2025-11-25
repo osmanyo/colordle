@@ -10,6 +10,8 @@
             --text-color: #ffffff;
             --border-color: #3a3a3c;
             --input-bg: #2c2c2e;
+            --accent-color: #00d2ff;
+            --danger-color: #c92a2a;
         }
 
         body {
@@ -25,9 +27,10 @@
 
         .game-container {
             width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box;
-            padding-bottom: 60px; 
+            padding-bottom: 80px;
         }
 
+        /* --- UI ELEMENTS --- */
         .target-preview {
             background-color: #333; padding: 15px; border-radius: 8px;
             text-align: center; margin-bottom: 20px;
@@ -46,7 +49,7 @@
             flex-shrink: 0; transition: background-color 0.2s;
         }
 
-        input {
+        input[type="text"] {
             flex-grow: 1; padding: 12px; font-size: 16px;
             background-color: var(--input-bg); border: 1px solid var(--border-color);
             color: white; border-radius: 4px; outline: none;
@@ -58,9 +61,39 @@
             border-radius: 4px; cursor: pointer;
         }
         button:hover { background-color: #e0e0e0; }
+        
+        .danger-btn {
+            background-color: var(--danger-color); color: white; width: 100%;
+        }
+        .danger-btn:hover { background-color: #e03131; }
 
+        /* --- SETTINGS ICON --- */
+        #settingsIcon {
+            position: absolute; top: 20px; right: 20px;
+            cursor: pointer; opacity: 0.7; transition: opacity 0.2s;
+        }
+        #settingsIcon:hover { opacity: 1; }
+        #settingsIcon svg { width: 24px; height: 24px; fill: white; }
+
+        /* --- SETTINGS MODAL --- */
+        #settingsModal {
+            display: none; position: absolute; top: 60px; right: 20px;
+            background: #1a1a1a; border: 1px solid var(--border-color);
+            padding: 15px; border-radius: 8px; width: 250px;
+            z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .setting-row { margin-bottom: 15px; }
+        .setting-label { display: block; margin-bottom: 5px; font-size: 14px; color: #aaa; }
+        input[type="range"] { width: 100%; }
+        select {
+            width: 100%; padding: 5px; background: #000; color: white; 
+            border: 1px solid #333; border-radius: 4px;
+        }
+        .separator { border-top: 1px solid #333; margin: 15px 0; }
+
+        /* --- SUGGESTIONS --- */
         .suggestions-list {
-            position: absolute; top: 100%; left: 60px; /* Adjusted for bigger circle */
+            position: absolute; top: 100%; left: 60px;
             width: calc(100% - 60px);
             max-height: 200px; overflow-y: auto;
             background-color: #222; border: 1px solid var(--border-color);
@@ -78,6 +111,7 @@
             margin-right: 10px; border: 1px solid #555;
         }
 
+        /* --- HISTORY LIST --- */
         .guess-history {
             display: flex; flex-direction: column; gap: 8px; margin-top: 20px;
         }
@@ -87,16 +121,16 @@
             padding: 15px 15px;
             border-radius: 6px;
             border: 1px solid rgba(0,0,0,0.1);
-            animation: popIn 0.3s ease;
             font-weight: bold;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
         }
 
-        .guess-num { width: 40px; opacity: 0.8; }
+        .guess-num { width: 40px; opacity: 0.8; font-size: 0.9em; }
         .guess-name { flex-grow: 1; text-align: left; }
         .guess-score { width: 60px; text-align: right; }
 
-        /* NEW: Seed Control Styles */
+        /* --- SEED CONTROL --- */
         #seedControl {
             position: fixed; bottom: 20px; left: 20px;
             background: #1a1a1a; padding: 10px;
@@ -107,21 +141,41 @@
         #seedControl span { font-size: 12px; color: #aaa; margin-right: 5px; }
         #seedInput {
             width: 60px; padding: 5px; font-size: 13px; height: auto;
-            text-align: center; background: #000;
+            text-align: center; background: #000; border: 1px solid #333; color:white;
         }
         #seedBtn {
             padding: 5px 10px; font-size: 13px; height: auto;
             background: #444; color: #fff;
         }
         #seedBtn:hover { background: #666; }
-
-        @keyframes popIn {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
     </style>
 </head>
 <body>
+
+    <!-- SETTINGS ICON -->
+    <div id="settingsIcon">
+        <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal">
+        <div class="setting-row">
+            <label class="setting-label">Max Suggestions: <span id="maxCountDisplay">5</span></label>
+            <input type="range" id="maxSuggestionsInput" min="3" max="50" value="5">
+        </div>
+        <div class="setting-row">
+            <label class="setting-label">Sort History By:</label>
+            <select id="sortOrderInput">
+                <option value="latest">Latest Guess First</option>
+                <option value="best">Best Score First</option>
+            </select>
+        </div>
+        <div class="separator"></div>
+        <div class="setting-row">
+            <!-- RESET BUTTON -->
+            <button id="resetGameBtn" class="danger-btn">Reset Current Game</button>
+        </div>
+    </div>
 
     <h1>Colordle</h1>
 
@@ -138,7 +192,6 @@
         <div id="historyList" class="guess-history"></div>
     </div>
 
-    <!-- SEED CONTROL BOTTOM LEFT -->
     <div id="seedControl">
         <span>Seed:</span>
         <input type="number" id="seedInput" value="">
@@ -148,7 +201,7 @@
     <script type="module">
         import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
 
-          const rawCSV = `name,hex,good name
+                  const rawCSV = `name,hex,good name
 100 Mph,#c93f38,x
 18th Century Green,#a59344,
 1975 Earth Red,#7b463b,
@@ -30175,7 +30228,6 @@ Zürich White,#e6e1d9,
         const blob = new Blob([rawCSV], {type: 'text/csv'});
         const CSV_URL = URL.createObjectURL(blob); 
 
-        // SETUP
         const toLab = converter('lab');
         const calcDeltaE = differenceCiede2000();
 
@@ -30185,12 +30237,17 @@ Zürich White,#e6e1d9,
         let targetLab = null;
         let currentSeed = null;
 
+        // Preferences
+        let maxSuggestions = 5;
+        let sortOrder = 'best'; 
+
+        let gameState = { seed: null, won: false, guesses: [] };
+
         async function loadColors() {
             try {
                 const response = await fetch(CSV_URL);
                 const text = await response.text();
                 const lines = text.split('\n');
-                
                 for(let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if(line) {
@@ -30213,27 +30270,57 @@ Zürich White,#e6e1d9,
         window.setGameSeed = (seed) => initGame(seed);
 
         function initGame(customSeed = null) {
-            guessCount = 0;
             document.getElementById('historyList').innerHTML = '';
             document.getElementById('targetDisplay').style.display = 'none';
             document.getElementById('guessInput').value = '';
             document.getElementById('inputPreview').style.backgroundColor = 'transparent';
 
-            // Default seed is days since epoch
             currentSeed = customSeed !== null ? customSeed : Math.floor(Date.now() / 86400000);
-            
-            // Update UI Input
             document.getElementById('seedInput').value = currentSeed;
+
+            const savedData = localStorage.getItem('colordle_save');
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                if (parsed.seed === currentSeed) {
+                    gameState = parsed;
+                    guessCount = gameState.guesses.length; 
+                } else {
+                    gameState = { seed: currentSeed, won: false, guesses: [] };
+                    guessCount = 0;
+                    localStorage.removeItem('colordle_save');
+                }
+            } else {
+                gameState = { seed: currentSeed, won: false, guesses: [] };
+                guessCount = 0;
+            }
 
             const goodColors = ALL_COLORS.filter(c => c.isGood);
             const pool = goodColors.length > 0 ? goodColors : ALL_COLORS;
-            
-            // Simple deterministic selection
             const targetIndex = Math.abs(currentSeed) % pool.length;
             targetColor = pool[targetIndex];
             targetLab = toLab(parse(targetColor.hex));
 
-            console.log(`Game Initialized. Seed: ${currentSeed}. Target: ${targetColor.name}`);
+            console.log(`Seed: ${currentSeed}. Target: ${targetColor.name}`);
+
+            renderHistory();
+            if (gameState.won) revealWin(false);
+        }
+
+        function resetCurrentGame() {
+            if(!confirm("Are you sure you want to reset progress for this color?")) return;
+            
+            // Reset logic
+            gameState.guesses = [];
+            gameState.won = false;
+            guessCount = 0;
+            saveGame(); // Overwrites storage with empty state
+
+            // UI Reset
+            document.getElementById('historyList').innerHTML = '';
+            document.getElementById('targetDisplay').style.display = 'none';
+            document.getElementById('settingsModal').style.display = 'none';
+            document.getElementById('guessInput').value = '';
+            document.getElementById('inputPreview').style.backgroundColor = 'transparent';
         }
 
         function getContrastYIQ(hexcolor){
@@ -30247,9 +30334,10 @@ Zürich White,#e6e1d9,
         }
 
         function handleGuess() {
+            if (gameState.won) return;
+
             const input = document.getElementById('guessInput');
             const val = input.value.trim();
-            
             let guessHex = null;
             let guessDisplayName = val;
 
@@ -30269,22 +30357,77 @@ Zürich White,#e6e1d9,
 
             if (!guessHex) return;
 
+            if (gameState.guesses.some(g => g.hex.toLowerCase() === guessHex.toLowerCase())) {
+                alert("You already guessed that!");
+                return;
+            }
+
             const guessLab = toLab(parse(guessHex));
             let deltaE = calcDeltaE(targetLab, guessLab);
             if (isNaN(deltaE)) deltaE = 0;
             const percentage = Math.max(0, 100 - deltaE).toFixed(2);
             
             guessCount++;
-            addGuessToHistory(guessCount, guessDisplayName, guessHex, percentage);
 
-            if (deltaE < 0.5) revealWin();
+            const newGuess = {
+                number: guessCount,
+                name: guessDisplayName,
+                hex: guessHex,
+                score: percentage
+            };
+            
+            gameState.guesses.push(newGuess);
+            
+            if (deltaE < 0.5) {
+                gameState.won = true;
+                revealWin(true);
+            }
+
+            saveGame();
+            renderHistory();
 
             input.value = '';
             document.getElementById('inputPreview').style.backgroundColor = 'transparent';
             document.getElementById('suggestions').style.display = 'none';
         }
 
-        function revealWin() {
+        function saveGame() {
+            localStorage.setItem('colordle_save', JSON.stringify(gameState));
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            container.innerHTML = '';
+
+            let sortedGuesses = [...gameState.guesses];
+
+            if (sortOrder === 'latest') {
+                sortedGuesses.reverse();
+            } else {
+                sortedGuesses.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+            }
+
+            sortedGuesses.forEach(g => {
+                const row = document.createElement('div');
+                const textColor = getContrastYIQ(g.hex);
+
+                row.className = 'guess-row';
+                row.style.backgroundColor = g.hex;
+                row.style.color = textColor;
+                row.style.borderColor = textColor === '#ffffff' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)';
+
+                row.innerHTML = `
+                    <span class="guess-num">#${g.number}</span>
+                    <div class="guess-details">
+                        <span class="guess-name">${g.name}</span>
+                        <span class="guess-score">${g.score}%</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function revealWin(animate = true) {
             const display = document.getElementById('targetDisplay');
             display.style.display = 'block';
             display.innerHTML = `
@@ -30292,32 +30435,44 @@ Zürich White,#e6e1d9,
                 <p>The color was <b>${targetColor.name}</b></p>
                 <div style="margin:10px auto; width:100px; height:40px; background:${targetColor.hex}; border:2px solid #555; border-radius:4px;"></div>
             `;
+            if(animate) window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function addGuessToHistory(num, name, hex, score) {
-            const container = document.getElementById('historyList');
-            const row = document.createElement('div');
-            const textColor = getContrastYIQ(hex);
-
-            row.className = 'guess-row';
-            row.style.backgroundColor = hex;
-            row.style.color = textColor;
-            row.style.borderColor = textColor === '#ffffff' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)';
-
-            row.innerHTML = `
-                <span class="guess-num">#${num}</span>
-                <div class="guess-details">
-                    <span class="guess-name">${name}</span>
-                    <span class="guess-score">${score}%</span>
-                </div>
-            `;
-            container.prepend(row);
-        }
-
-        // INPUT LOGIC
+        // --- EVENTS ---
         const inputEl = document.getElementById('guessInput');
         const previewEl = document.getElementById('inputPreview');
         const suggestions = document.getElementById('suggestions');
+
+        document.addEventListener('click', (e) => {
+            const isClickInside = inputEl.contains(e.target) || suggestions.contains(e.target);
+            if (!isClickInside) {
+                suggestions.style.display = 'none';
+            }
+        });
+
+        const settingsIcon = document.getElementById('settingsIcon');
+        const settingsModal = document.getElementById('settingsModal');
+        
+        settingsIcon.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            const isVisible = settingsModal.style.display === 'block';
+            settingsModal.style.display = isVisible ? 'none' : 'block';
+        });
+
+        // RESET BTN
+        document.getElementById('resetGameBtn').addEventListener('click', resetCurrentGame);
+
+        const maxInput = document.getElementById('maxSuggestionsInput');
+        maxInput.addEventListener('input', (e) => {
+            maxSuggestions = parseInt(e.target.value);
+            document.getElementById('maxCountDisplay').innerText = maxSuggestions;
+        });
+
+        const sortInput = document.getElementById('sortOrderInput');
+        sortInput.addEventListener('change', (e) => {
+            sortOrder = e.target.value;
+            renderHistory();
+        });
 
         inputEl.addEventListener('input', (e) => {
             const val = e.target.value.trim().toLowerCase();
@@ -30344,7 +30499,8 @@ Zürich White,#e6e1d9,
                 return aName.startsWith(val) ? -1 : 1;
             });
 
-            matches = matches.slice(0, 5);
+            matches = matches.slice(0, maxSuggestions);
+
             if (matches.length > 0) {
                 suggestions.style.display = 'block';
                 matches.forEach(c => {
@@ -30381,7 +30537,6 @@ Zürich White,#e6e1d9,
 
         document.getElementById('guessBtn').addEventListener('click', handleGuess);
         
-        // Seed Button Logic
         document.getElementById('seedBtn').addEventListener('click', () => {
             const val = parseInt(document.getElementById('seedInput').value);
             if(!isNaN(val)) initGame(val);
