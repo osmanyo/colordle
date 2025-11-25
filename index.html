@@ -27,27 +27,22 @@
             width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box;
         }
 
-        /* Target Preview (Debug) */
         .target-preview {
-            background-color: #333; padding: 10px; border-radius: 8px;
+            background-color: #333; padding: 15px; border-radius: 8px;
             text-align: center; margin-bottom: 20px;
             border: 1px solid var(--border-color);
+            display: none; /* Hidden by default */
         }
 
-        /* Input Area */
         .input-group {
             position: relative; display: flex; gap: 10px; margin-bottom: 20px; align-items: center;
         }
 
-        /* The new Live Preview Circle */
         #inputPreview {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
+            width: 35px; height: 35px; border-radius: 50%;
             background-color: transparent;
             border: 2px solid var(--border-color);
-            flex-shrink: 0;
-            transition: background-color 0.2s;
+            flex-shrink: 0; transition: background-color 0.2s;
         }
 
         input {
@@ -63,9 +58,8 @@
         }
         button:hover { background-color: #e0e0e0; }
 
-        /* Autocomplete */
         .suggestions-list {
-            position: absolute; top: 100%; left: 45px; /* Shifted to align with input */
+            position: absolute; top: 100%; left: 45px;
             width: calc(100% - 45px);
             max-height: 200px; overflow-y: auto;
             background-color: #222; border: 1px solid var(--border-color);
@@ -77,14 +71,12 @@
             cursor: pointer; border-bottom: 1px solid #333;
         }
         .suggestion-item:hover { background-color: #333; }
-        .suggestion-item strong { color: #00d2ff; } /* Highlight matched text */
 
         .mini-swatch {
             width: 20px; height: 20px; border-radius: 50%;
             margin-right: 10px; border: 1px solid #555;
         }
 
-        /* History Bars */
         .guess-history {
             display: flex; flex-direction: column; gap: 8px; margin-top: 20px;
         }
@@ -114,15 +106,12 @@
     <h1>Colordle</h1>
 
     <div class="game-container">
-        <div id="targetDisplay" class="target-preview">Loading data...</div>
+        <div id="targetDisplay" class="target-preview"></div>
 
         <div class="input-group">
-            <!-- FEATURE: Live Preview Circle -->
             <div id="inputPreview"></div>
-            
             <input type="text" id="guessInput" placeholder="Name (Red) or Hex (#ff0000)..." autocomplete="off">
             <button id="guessBtn">Guess</button>
-            
             <div id="suggestions" class="suggestions-list"></div>
         </div>
 
@@ -132,14 +121,6 @@
     <script type="module">
         import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
 
-        // --- 1. SETUP MATH ---
-        const toLab = converter('lab');
-        const calcDeltaE = differenceCiede2000();
-
-        // --- 2. CSV HANDLING ---
-        let ALL_COLORS = [];
-        
-        // *** REPLACE WITH YOUR REAL CSV FILE LATER ***
           const rawCSV = `name,hex,good name
 100 Mph,#c93f38,x
 18th Century Green,#a59344,
@@ -30167,11 +30148,22 @@ Zürich White,#e6e1d9,
         const blob = new Blob([rawCSV], {type: 'text/csv'});
         const CSV_URL = URL.createObjectURL(blob); 
 
+        // SETUP
+        const toLab = converter('lab');
+        const calcDeltaE = differenceCiede2000();
+
+        let ALL_COLORS = [];
+        let guessCount = 0;
+        let targetColor = null;
+        let targetLab = null;
+        let currentSeed = null;
+
         async function loadColors() {
             try {
                 const response = await fetch(CSV_URL);
                 const text = await response.text();
                 const lines = text.split('\n');
+                
                 for(let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if(line) {
@@ -30191,22 +30183,27 @@ Zürich White,#e6e1d9,
             }
         }
 
-        // --- 3. GAME STATE ---
-        let guessCount = 0;
-        let targetColor = null;
-        let targetLab = null;
+        // Expose seed function to console
+        window.setGameSeed = (seed) => initGame(seed);
 
-        function initGame() {
+        function initGame(customSeed = null) {
+            guessCount = 0;
+            document.getElementById('historyList').innerHTML = '';
+            document.getElementById('targetDisplay').style.display = 'none';
+            document.getElementById('guessInput').value = '';
+            document.getElementById('inputPreview').style.backgroundColor = 'transparent';
+
+            // Default seed is days since epoch
+            currentSeed = customSeed !== null ? customSeed : Math.floor(Date.now() / 86400000);
+            
             const goodColors = ALL_COLORS.filter(c => c.isGood);
             const pool = goodColors.length > 0 ? goodColors : ALL_COLORS;
-            const dayIndex = Math.floor(Date.now() / 86400000) % pool.length;
-            targetColor = pool[dayIndex];
+            
+            const targetIndex = currentSeed % pool.length;
+            targetColor = pool[targetIndex];
             targetLab = toLab(parse(targetColor.hex));
 
-            document.getElementById('targetDisplay').innerHTML = `
-                Target: <b>${targetColor.name}</b> 
-                <span style="font-size:0.8em; color:#aaa">(${targetColor.hex})</span>
-            `;
+            console.log(`Game Initialized. Seed: ${currentSeed}. Target: ${targetColor.name}`);
         }
 
         function getContrastYIQ(hexcolor){
@@ -30219,7 +30216,6 @@ Zürich White,#e6e1d9,
             return (yiq >= 128) ? '#000000' : '#ffffff';
         }
 
-        // --- 4. MAIN LOGIC ---
         function handleGuess() {
             const input = document.getElementById('guessInput');
             const val = input.value.trim();
@@ -30227,16 +30223,13 @@ Zürich White,#e6e1d9,
             let guessHex = null;
             let guessDisplayName = val;
 
-            // Check if it's a HEX code
             if (val.startsWith('#')) {
                 if (parse(val)) {
                     guessHex = val;
                     const known = ALL_COLORS.find(c => c.hex.toLowerCase() === val.toLowerCase());
                     if (known) guessDisplayName = known.name;
                 }
-            } 
-            // Check if it's a NAME
-            else {
+            } else {
                 const found = ALL_COLORS.find(c => c.name.toLowerCase() === val.toLowerCase());
                 if (found) {
                     guessHex = found.hex;
@@ -30244,27 +30237,32 @@ Zürich White,#e6e1d9,
                 }
             }
 
-            if (!guessHex) {
-                // Visual shake effect could go here
-                return;
-            }
+            if (!guessHex) return;
 
             const guessLab = toLab(parse(guessHex));
             let deltaE = calcDeltaE(targetLab, guessLab);
             if (isNaN(deltaE)) deltaE = 0;
-            
             const percentage = Math.max(0, 100 - deltaE).toFixed(2);
             
             guessCount++;
             addGuessToHistory(guessCount, guessDisplayName, guessHex, percentage);
 
-            if (deltaE < 0.5) {
-                setTimeout(() => alert("🎉 YOU WON!"), 50);
-            }
+            if (deltaE < 0.5) revealWin();
 
             input.value = '';
             document.getElementById('inputPreview').style.backgroundColor = 'transparent';
             document.getElementById('suggestions').style.display = 'none';
+        }
+
+        function revealWin() {
+            const display = document.getElementById('targetDisplay');
+            display.style.display = 'block';
+            display.innerHTML = `
+                <h2>🎉 YOU WON!</h2>
+                <p>The color was <b>${targetColor.name}</b></p>
+                <div style="margin:10px auto; width:100px; height:40px; background:${targetColor.hex}; border:2px solid #555; border-radius:4px;"></div>
+                <p>Seed: ${currentSeed}</p>
+            `;
         }
 
         function addGuessToHistory(num, name, hex, score) {
@@ -30284,11 +30282,10 @@ Zürich White,#e6e1d9,
                     <span class="guess-score">${score}%</span>
                 </div>
             `;
-
             container.prepend(row);
         }
 
-        // --- 5. AUTOCOMPLETE & PREVIEW LOGIC ---
+        // INPUT LOGIC
         const inputEl = document.getElementById('guessInput');
         const previewEl = document.getElementById('inputPreview');
         const suggestions = document.getElementById('suggestions');
@@ -30297,50 +30294,30 @@ Zürich White,#e6e1d9,
             const val = e.target.value.trim().toLowerCase();
             suggestions.innerHTML = '';
             
-            // --- A. Live Preview Logic ---
+            // Preview
             let validColor = parse(val);
-            
-            // If not a valid hex/standard color, check our list for a name
             if(!validColor && val.length > 1) {
                 const found = ALL_COLORS.find(c => c.name.toLowerCase() === val);
                 if(found) validColor = found.hex;
             }
+            previewEl.style.backgroundColor = validColor ? (typeof validColor === 'string' ? validColor : val) : 'transparent';
 
-            if (validColor) {
-                previewEl.style.backgroundColor = typeof validColor === 'string' ? validColor : val;
-            } else {
-                previewEl.style.backgroundColor = 'transparent';
-            }
-
-            // --- B. Suggestions Logic ---
-            // Don't show suggestions if empty or typing a hex code
+            // Suggestions
             if (val.length < 2 || val.startsWith('#')) { 
                 suggestions.style.display = 'none'; 
                 return; 
             }
 
-            // Filter
             let matches = ALL_COLORS.filter(c => c.name.toLowerCase().includes(val));
 
-            // Sort: Exact matches first, then "Starts with", then others
             matches.sort((a, b) => {
                 const aName = a.name.toLowerCase();
                 const bName = b.name.toLowerCase();
-                
-                // 1. Exact Match priority
                 if (aName === val) return -1;
                 if (bName === val) return 1;
-
-                // 2. Starts With priority
-                const aStarts = aName.startsWith(val);
-                const bStarts = bName.startsWith(val);
-                if (aStarts && !bStarts) return -1;
-                if (!aStarts && bStarts) return 1;
-
-                return 0;
+                return aName.startsWith(val) ? -1 : 1;
             });
 
-            // Slice after sorting to keep best matches
             matches = matches.slice(0, 5);
 
             if (matches.length > 0) {
@@ -30351,7 +30328,7 @@ Zürich White,#e6e1d9,
                     div.innerHTML = `<div class="mini-swatch" style="background:${c.hex}"></div>${c.name}`;
                     div.onclick = () => {
                         inputEl.value = c.name;
-                        previewEl.style.backgroundColor = c.hex; // Update preview on click
+                        previewEl.style.backgroundColor = c.hex;
                         suggestions.style.display = 'none';
                         inputEl.focus();
                     };
@@ -30362,35 +30339,22 @@ Zürich White,#e6e1d9,
             }
         });
 
-        // --- 6. ENTER KEY LOGIC (THE FIX) ---
         inputEl.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const val = inputEl.value.trim().toLowerCase();
-                
-                // 1. Check if what they typed is ALREADY a valid color in our list
                 const exactMatch = ALL_COLORS.find(c => c.name.toLowerCase() === val);
-                
-                // 2. Check if what they typed is a valid Hex
                 const isHex = val.startsWith('#') && parse(val);
 
                 if (exactMatch || isHex) {
-                    // If they typed exactly "Red" or "#fff", submit that.
-                    // Ignore the suggestions list.
                     handleGuess();
                     suggestions.style.display = 'none';
                 } else if (suggestions.style.display === 'block' && suggestions.firstChild) {
-                    // Only auto-select the list item if they typed gibberish that matches a part of a name
                     suggestions.firstChild.click();
-                } else {
-                    // Try to guess anyway (handles "red" if it's a standard CSS color but not in our CSV)
-                    handleGuess();
                 }
             }
         });
 
         document.getElementById('guessBtn').addEventListener('click', handleGuess);
-
-        // --- START ---
         loadColors();
 
     </script>
