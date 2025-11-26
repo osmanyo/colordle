@@ -1,5 +1,5 @@
-# colordle
+# Colordle
 
-colordle game with adjustable seed option 
+Daily Colordle game with an adjustable seed.
 
-color names from https://github.com/meodai/color-names?tab=readme-ov-file
+Color names are from https://github.com/meodai/color-names?tab=readme-ov-file
