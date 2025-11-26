@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colordle Space</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Helvetica Neue', Arial, sans-serif; user-select: none; }
+        
+        /* --- UI OVERLAYS --- */
+        #instructions {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: white; text-align: center; pointer-events: none;
+            background: rgba(0,0,0,0.85); padding: 30px; border-radius: 12px;
+            border: 1px solid #555; width: 400px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10;
+        }
+
+        /* FIX: Allows the link to be clicked even though the parent ignores clicks */
+        #instructions a {
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; width: 8px; height: 8px;
+            background: rgba(255, 255, 255, 0.8); border-radius: 50%;
+            transform: translate(-50%, -50%); pointer-events: none;
+            mix-blend-mode: difference; z-index: 5;
+            transition: width 0.1s, height 0.1s;
+        }
+
+        /* TOP HUD */
+        #hud {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            text-align: center;
+            color: #fff; font-family: monospace; 
+            background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 20px;
+            border: 1px solid #444; display: none; pointer-events: none;
+            backdrop-filter: blur(4px);
+        }
+
+        /* SETTINGS PANEL */
+        #settingsIcon {
+            position: absolute; top: 20px; right: 20px; cursor: pointer; z-index: 20; opacity: 0.7;
+        }
+        #settingsIcon:hover { opacity: 1; }
+        #settingsIcon svg { width: 24px; height: 24px; fill: white; }
+
+        #settingsPanel {
+            position: absolute; top: 60px; right: 20px; width: 240px;
+            background: rgba(20, 20, 20, 0.9); border: 1px solid #444;
+            padding: 15px; border-radius: 8px; color: white;
+            display: none; z-index: 20;
+        }
+
+        .setting-row { margin-bottom: 12px; }
+        .setting-row label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
+        input[type=range] { width: 100%; cursor: pointer; }
+        select, input[type=text] { 
+            width: 100%; background: #111; color: white; 
+            border: 1px solid #555; padding: 6px; border-radius: 4px; box-sizing: border-box;
+        }
+        button#goBtn {
+            width: 100%; margin-top: 5px; padding: 6px; cursor: pointer;
+            background: #00d2ff; border: none; font-weight: bold; border-radius: 4px;
+        }
+        button#goBtn:hover { background: #66eeff; }
+
+        .key { border: 1px solid #888; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #222; }
+
+        #loading {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            color: #00d2ff; font-family: monospace; font-weight: bold;
+        }
+        
+        .lab-desc { font-size: 12px; color: #aaa; margin-top: 10px; line-height: 1.4; text-align: left;}
+    </style>
+</head>
+<body>
+
+    <div id="loading">Loading Universe...</div>
+    <div id="crosshair"></div>
+    
+    <div id="settingsIcon">
+        <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+    </div>
+
+    <div id="settingsPanel">
+        <div class="setting-row">
+            <label>Find Color (Name or Hex)</label>
+            <input type="text" id="searchInput" placeholder="e.g. Red or #ff0000">
+            <button id="goBtn">Teleport</button>
+        </div>
+        <hr style="border-color: #333; margin: 15px 0;">
+        <div class="setting-row">
+            <label>Dot Size</label>
+            <input type="range" id="sizeSlider" min="0.1" max="3.0" step="0.1" value="0.8">
+        </div>
+        <div class="setting-row">
+            <label>Shape</label>
+            <select id="shapeSelect">
+                <option value="square">Square</option>
+                <option value="circle">Circle</option>
+            </select>
+        </div>
+        <div class="setting-row">
+            <label>Fly Speed</label>
+            <!-- UPDATED: Min speed is now 0.05 (very slow) -->
+            <input type="range" id="speedSlider" min="0.05" max="4.0" step="0.05" value="1.0">
+        </div>
+    </div>
+    
+    <div id="instructions">
+        <h1>Color Space (LAB)</h1>
+
+        <div style="font-size: 13px; color: #aaa; margin-bottom: 15px; line-height: 1.4;">
+            This space includes only the named colors from the full list 
+            <a href="https://github.com/meodai/color-names" target="_blank" style="color: #00d2ff; text-decoration: none; border-bottom: 1px dotted #00d2ff;">available here</a>.
+        </div>
+
+        <p>Hover over dots to see color names.</p>
+        <hr style="border-color: #333; margin: 15px 0;">
+        <p>Move: <span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span></p>
+        <p>Fly Up: <span class="key">Space</span> / Down: <span class="key">Shift</span></p>
+        <p>Look: <b>Mouse</b></p>
+        
+        <div class="lab-desc">
+            <b>What is this?</b><br>
+            This is the <b>CIELAB</b> color space. Unlike RGB (a cube), LAB organizes colors by how humans perceive them.<br><br>
+            <b>↑ Up/Down (L):</b> Lightness<br>
+            <b>↔ X Axis (A):</b> Green vs Red<br>
+            <b>↔ Z Axis (B):</b> Blue vs Yellow<br><br>
+            You can teleport to a given color name from the settings on the top right.
+        </div>
+
+        <p style="margin-top:20px; font-size:0.9em; color:#888;">Click to Start. Press <b>ESC</b> for Settings.</p>
+    </div>
+
+        
+
+    <div id="hud">
+        <div id="colorName" style="font-size: 1.4em; font-weight: bold;">---</div>
+        <div id="colorHex" style="color: #ccc; font-size: 0.9em; margin-top:2px;">---</div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://esm.sh/three@0.160.0';
+        import { PointerLockControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
+        import { converter, parse } from 'https://esm.sh/culori@3';
+
+        // --- SETTINGS STATE ---
+        let settings = {
+            speed: 1.0,
+            friction: 0.92,
+            pointSize: 0.8
+        };
+
+        const CSV_FILE = 'colornames.csv';
+
+        // --- THREE.JS SETUP ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.FogExp2(0x050505, 0.0015);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // --- CONTROLS ---
+        const controls = new PointerLockControls(camera, document.body);
+        const instructions = document.getElementById('instructions');
+        const hud = document.getElementById('hud');
+        const settingsPanel = document.getElementById('settingsPanel');
+
+        // Lock pointer on click (Ignore settings and links)
+        document.addEventListener('click', (e) => {
+            // FIX: Don't lock if clicking Settings or the Link
+            if(e.target.closest('#settingsIcon') || 
+               e.target.closest('#settingsPanel') || 
+               e.target.closest('a')) return;
+               
+            controls.lock();
+        });
+        
+        controls.addEventListener('lock', () => {
+            instructions.style.display = 'none';
+            settingsPanel.style.display = 'none';
+            hud.style.display = 'block';
+        });
+        controls.addEventListener('unlock', () => {
+            instructions.style.display = 'block';
+            hud.style.display = 'none';
+        });
+
+        // --- SETTINGS & SEARCH ---
+        document.getElementById('settingsIcon').addEventListener('click', () => {
+            const isVisible = settingsPanel.style.display === 'block';
+            settingsPanel.style.display = isVisible ? 'none' : 'block';
+        });
+
+        document.getElementById('sizeSlider').addEventListener('input', (e) => {
+            if(pointsMesh) pointsMesh.material.size = parseFloat(e.target.value);
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            settings.speed = parseFloat(e.target.value);
+        });
+
+        document.getElementById('shapeSelect').addEventListener('change', (e) => {
+            if(!pointsMesh) return;
+            if(e.target.value === 'circle') {
+                pointsMesh.material.map = createCircleTexture();
+                pointsMesh.material.alphaTest = 0.5;
+            } else {
+                pointsMesh.material.map = null;
+                pointsMesh.material.alphaTest = 0;
+            }
+            pointsMesh.material.needsUpdate = true;
+        });
+
+        // TELEPORT FUNCTION
+        document.getElementById('goBtn').addEventListener('click', () => {
+            const val = document.getElementById('searchInput').value.trim().toLowerCase();
+            if(!val) return;
+
+            // Find color
+            const found = colorData.find(c => 
+                c.name.toLowerCase() === val || 
+                c.hex.toLowerCase() === val
+            );
+
+            if(found) {
+                camera.position.set(found.x, found.y, found.z + 20);
+                camera.lookAt(found.x, found.y, found.z);
+                // Close menu and lock
+                settingsPanel.style.display = 'none';
+                controls.lock();
+            } else {
+                alert("Color not found in database.");
+            }
+        });
+
+        function createCircleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(16, 16, 14, 0, Math.PI*2);
+            ctx.fill();
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // --- LOAD DATA ---
+        const toLab = converter('lab');
+        const colorData = []; 
+        let pointsMesh = null;
+
+        async function initParticles() {
+            try {
+                const response = await fetch(CSV_FILE);
+                const text = await response.text();
+                const lines = text.split('\n');
+
+                const positions = [];
+                const colors = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const parts = line.split(',');
+                    if (parts.length < 2) continue;
+
+                    const name = parts[0].trim();
+                    const hex = parts[1].trim();
+                    
+                    const parsed = parse(hex);
+                    if (parsed) {
+                        const lab = toLab(parsed);
+                        
+                        // Scale LAB to World Space
+                        const x = lab.a * 3; 
+                        const y = (lab.l - 50) * 4; 
+                        const z = lab.b * 3; 
+
+                        positions.push(x, y, z);
+                        
+                        const color = new THREE.Color(hex);
+                        colors.push(color.r, color.g, color.b);
+
+                        colorData.push({ name, hex, x, y, z });
+                    }
+                }
+
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({ 
+                    size: settings.pointSize, 
+                    vertexColors: true,
+                    sizeAttenuation: true,
+                    map: null
+                });
+
+                pointsMesh = new THREE.Points(geometry, material);
+                scene.add(pointsMesh);
+
+                camera.position.set(0, 0, 250);
+                document.getElementById('loading').style.display = 'none';
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerText = "Error loading CSV (Use Local Server!)";
+            }
+        }
+
+        initParticles();
+
+        // --- AXIS LABELS ---
+        function createTextSprite(message, color) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 256; canvas.height = 128;
+            
+            ctx.font = "Bold 40px Arial";
+            ctx.fillStyle = color;
+            ctx.textAlign = "center";
+            ctx.fillText(message, 128, 80);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(40, 20, 1);
+            return sprite;
+        }
+
+        function addLabels() {
+            const g = new THREE.Group();
+            
+            // Axis Lines (Subtle)
+            const axesHelper = new THREE.AxesHelper(200);
+            // Hide default axes colors if you want custom, but default RGB is actually standard mapping here
+            // scene.add(axesHelper); 
+
+            // Text Labels (L, A, B)
+            const lTop = createTextSprite("+Lightness", "#ffffff");
+            lTop.position.set(0, 220, 0);
+            g.add(lTop);
+
+            const lBot = createTextSprite("-Lightness", "#555555");
+            lBot.position.set(0, -220, 0);
+            g.add(lBot);
+
+            const aPos = createTextSprite("+A", "#ff4444");
+            aPos.position.set(200, 0, 0);
+            g.add(aPos);
+
+            const aNeg = createTextSprite("-A", "#44ff44");
+            aNeg.position.set(-200, 0, 0);
+            g.add(aNeg);
+
+            const bPos = createTextSprite("+B", "#ffff44");
+            bPos.position.set(0, 0, 200);
+            g.add(bPos);
+
+            const bNeg = createTextSprite("-B", "#4444ff");
+            bNeg.position.set(0, 0, -200);
+            g.add(bNeg);
+
+            scene.add(g);
+        }
+        addLabels();
+
+        // --- PHYSICS ---
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        const move = { fwd: false, bwd: false, left: false, right: false, up: false, down: false };
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.code) {
+                case 'KeyW': move.fwd = true; break;
+                case 'KeyS': move.bwd = true; break;
+                case 'KeyA': move.left = true; break;
+                case 'KeyD': move.right = true; break;
+                case 'Space': move.up = true; break;
+                case 'ShiftLeft': move.down = true; break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            switch(e.code) {
+                case 'KeyW': move.fwd = false; break;
+                case 'KeyS': move.bwd = false; break;
+                case 'KeyA': move.left = false; break;
+                case 'KeyD': move.right = false; break;
+                case 'Space': move.up = false; break;
+                case 'ShiftLeft': move.down = false; break;
+            }
+        });
+
+        const clock = new THREE.Clock();
+
+        function updateMovement(delta) {
+            if (!controls.isLocked) return;
+
+            velocity.multiplyScalar(settings.friction);
+
+            const camLook = new THREE.Vector3();
+            camera.getWorldDirection(camLook);
+            
+            const camRight = new THREE.Vector3();
+            camRight.crossVectors(camLook, camera.up).normalize();
+
+            const accel = settings.speed * 15.0 * delta; 
+
+            // W moves exactly where looking
+            if (move.fwd) velocity.addScaledVector(camLook, accel);
+            if (move.bwd) velocity.addScaledVector(camLook, -accel);
+            if (move.right) velocity.addScaledVector(camRight, accel);
+            if (move.left) velocity.addScaledVector(camRight, -accel);
+            
+            // Independent Up/Down
+            if (move.up) velocity.y += accel;
+            if (move.down) velocity.y -= accel;
+
+            camera.position.add(velocity);
+        }
+
+        // --- HOVER ---
+        const lookVector = new THREE.Vector3();
+        
+        function checkHover() {
+            if (!controls.isLocked || colorData.length === 0) return;
+
+            const camPos = camera.position;
+            camera.getWorldDirection(lookVector);
+
+            let bestDist = Infinity;
+            let bestIdx = -1;
+
+            // Simple frustum/distance check
+            for (let i = 0; i < colorData.length; i += 1) { 
+                const p = colorData[i];
+                const dx = p.x - camPos.x;
+                const dy = p.y - camPos.y;
+                const dz = p.z - camPos.z;
+                const distSq = dx*dx + dy*dy + dz*dz;
+
+                if (distSq < 2000) { 
+                    const dist = Math.sqrt(distSq);
+                    const dot = (dx/dist * lookVector.x) + (dy/dist * lookVector.y) + (dz/dist * lookVector.z);
+
+                    if (dot > 0.999) {
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestIdx = i;
+                        }
+                    }
+                }
+            }
+
+            if (bestIdx !== -1) {
+                const c = colorData[bestIdx];
+                document.getElementById('colorName').innerText = c.name;
+                document.getElementById('colorHex').innerText = c.hex;
+                document.getElementById('colorName').style.color = c.hex;
+                document.getElementById('crosshair').style.width = "16px";
+                document.getElementById('crosshair').style.height = "16px";
+            } else {
+                document.getElementById('colorName').innerText = "---";
+                document.getElementById('colorHex').innerText = "---";
+                document.getElementById('colorName').style.color = "white";
+                document.getElementById('crosshair').style.width = "8px";
+                document.getElementById('crosshair').style.height = "8px";
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = Math.min(clock.getDelta(), 0.1);
+            updateMovement(delta);
+            checkHover();
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
