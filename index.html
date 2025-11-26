@@ -192,13 +192,14 @@
         <div class="setting-row">
             <label class="setting-label">Sort History By:</label>
             <select id="sortOrderInput">
-                <option value="latest">Latest Guess First</option>
                 <option value="best">Best Score First</option>
+                <option value="latest">Latest Guess First</option>
+                
             </select>
         </div>
         <div class="separator"></div>
         <div class="setting-row">
-            <!-- RESET BUTTON -->
+ 
             <button id="resetGameBtn" class="danger-btn">Reset Current Game</button>
         </div>
     </div>
@@ -400,15 +401,28 @@
             const container = document.getElementById('historyList');
             container.innerHTML = '';
 
-            let sortedGuesses = [...gameState.guesses];
+            if (gameState.guesses.length === 0) return;
+
+            // Create a copy of the array so we don't mess up the game state
+            let history = [...gameState.guesses];
+            let displayList = [];
 
             if (sortOrder === 'latest') {
-                sortedGuesses.reverse();
+                // Option A: Just show newest to oldest
+                displayList = history.reverse();
             } else {
-                sortedGuesses.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+                // Option B: Best Score (Modified)
+                // 1. Remove the most recent guess (it must be first)
+                const latestGuess = history.pop();
+
+                // 2. Sort the REMAINING older guesses by score (High -> Low)
+                history.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+
+                // 3. Combine them: [Latest, ...Best of the Rest]
+                displayList = [latestGuess, ...history];
             }
 
-            sortedGuesses.forEach(g => {
+            displayList.forEach(g => {
                 const row = document.createElement('div');
                 const textColor = getContrastYIQ(g.hex);
 
@@ -416,6 +430,9 @@
                 row.style.backgroundColor = g.hex;
                 row.style.color = textColor;
                 row.style.borderColor = textColor === '#ffffff' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)';
+
+                // Optional: Add a little marker to the latest guess if you want
+                // const isLatest = g.number === gameState.guesses.length;
 
                 row.innerHTML = `
                     <span class="guess-num">#${g.number}</span>
