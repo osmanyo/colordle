@@ -187,7 +187,7 @@
     <div id="settingsModal">
         <div class="setting-row">
             <label class="setting-label">Max Suggestions: <span id="maxCountDisplay">5</span></label>
-            <input type="range" id="maxSuggestionsInput" min="3" max="50" value="5">
+            <input type="range" id="maxSuggestionsInput" min="0" max="50" value="0">
         </div>
         <div class="setting-row">
             <label class="setting-label">Sort History By:</label>
@@ -244,6 +244,31 @@
         let sortOrder = 'best'; 
 
         let gameState = { seed: null, won: false, guesses: [] };
+
+        // --- CHEAT / DEBUG TOOL ---
+        window.setTarget = (query) => {
+            const match = ALL_COLORS.find(c => 
+                c.name.toLowerCase() === query.toLowerCase() || 
+                c.hex.toLowerCase() === query.toLowerCase()
+            );
+
+            if (match) {
+                // 1. Update Target
+                targetColor = match;
+                targetLab = toLab(parse(match.hex));
+                
+                // 2. Reset Game State so you can play fresh
+                gameState.won = false;
+                gameState.guesses = [];
+                guessCount = 0;
+                document.getElementById('targetDisplay').style.display = 'none';
+                renderHistory();
+                
+                console.log(`✅ Target set to: ${match.name} (${match.hex})`);
+            } else {
+                console.error(`❌ Color "${query}" not found in database.`);
+            }
+        };
 
         async function loadColors() {
             try {
