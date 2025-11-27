@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-H57NFG20DE"></script>
@@ -26,7 +26,7 @@
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: white; text-align: center; pointer-events: none;
             background: rgba(0,0,0,0.85); padding: 30px; border-radius: 12px;
-            border: 1px solid #555; width: 400px; max-width: 80%;
+            border: 1px solid #555; width: 400px; max-width: 85%;
             box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10;
         }
 
@@ -43,9 +43,11 @@
         /* HUD */
         #hud {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            text-align: center; width: 80%; pointer-events: none;
+            text-align: center;
+            max-width: 90%;
+            pointer-events: none;
             color: #fff; font-family: monospace; 
-            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 20px;
+            background: rgba(0,0,0,0.6); padding: 10px 25px; border-radius: 30px;
             border: 1px solid #444; display: none; 
             backdrop-filter: blur(4px);
         }
@@ -88,23 +90,12 @@
         
         .lab-desc { font-size: 12px; color: #aaa; margin-top: 10px; line-height: 1.4; text-align: left;}
 
-        /* MOBILE CONTROLS */
-        #mobileControls {
-            position: absolute; bottom: 20px; right: 20px; z-index: 15;
-            display: none; flex-direction: column; gap: 10px;
-        }
-        .mob-btn {
-            width: 50px; height: 50px; background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3); border-radius: 50%;
-            color: white; font-size: 20px; display: flex;
-            align-items: center; justify-content: center;
-            user-select: none; touch-action: none;
-        }
-        .mob-btn:active { background: rgba(0, 210, 255, 0.5); }
-        
+        /* MOBILE HINT */
         #mobileHint {
-            position: absolute; bottom: 20px; left: 20px; color: rgba(255,255,255,0.5);
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            color: rgba(255,255,255,0.6); text-align: center; width: 100%;
             font-size: 12px; pointer-events: none; display: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,1);
         }
     </style>
 </head>
@@ -130,10 +121,9 @@
         <div class="setting-row">
             <div class="setting-label-row">
                 <span class="setting-label">Dot Size</span>
-                <span id="sizeVal" class="setting-value">1</span>
+                <span id="sizeVal" class="setting-value">0.8</span>
             </div>
-       
-            <input type="range" id="sizeSlider" min="0.05" max="5.0" step="0.05" value="1">
+            <input type="range" id="sizeSlider" min="0.05" max="5.0" step="0.05" value="0.8">
         </div>
 
         <div class="setting-row">
@@ -149,7 +139,7 @@
                 <span class="setting-label">Fly Speed</span>
                 <span id="speedVal" class="setting-value">1.0</span>
             </div>
-            <input type="range" id="speedSlider" min="0.01" max="3" step="0.1" value="1.0">
+            <input type="range" id="speedSlider" min="0.01" max="8.0" step="0.1" value="1.0">
         </div>
     </div>
     
@@ -173,12 +163,11 @@
             This is the <b>CIELAB</b> color space. Unlike RGB (a cube), LAB organizes colors by how humans perceive them.<br><br>
             <b>↑ Up/Down (L):</b> Lightness<br>
             <b>↔ X Axis (A):</b> Green vs Red<br>
-            <b>↔ Z Axis (B):</b> Blue vs Yellow
+            <b>↔ Z Axis (B):</b> Blue vs Yellow<br><br>
+            You can teleport to a given color name from the settings on the top right.
         </div>
 
         <p id="startMsg" style="margin-top:20px; font-size:0.9em; color:#888;">Click to Start. Press <b>ESC</b> for Settings.</p>
-        <br><br>
-            You can teleport to a given color name from the settings on the top right.
 
         <a href="index.html" style="display: block; margin-top: 15px; color: #00d2ff; text-decoration: none; font-weight: bold; pointer-events: auto;">
             ← Back to Colordle
@@ -192,11 +181,7 @@
     </div>
 
     <!-- MOBILE UI -->
-    <div id="mobileHint">Left: Drag to Move | Right: Drag to Look</div>
-    <div id="mobileControls">
-        <div id="btnUp" class="mob-btn">▲</div>
-        <div id="btnDown" class="mob-btn">▼</div>
-    </div>
+    <div id="mobileHint">Left Side: Move (Joystick) • Right Side: Look</div>
 
     <script type="module">
         import * as THREE from 'https://esm.sh/three@0.160.0';
@@ -219,8 +204,11 @@
         scene.fog = new THREE.FogExp2(0x050505, 0.0015);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        // --- FIX FOR BLURRY MOBILE ---
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
         document.body.appendChild(renderer.domElement);
 
         // --- CONTROLS LOGIC ---
@@ -244,12 +232,17 @@
             });
         } else {
             // Mobile Setup
-            document.getElementById('startMsg').innerText = "Tap to Start";
-            document.getElementById('mobileControls').style.display = 'flex';
+            document.getElementById('startMsg').innerText = "Tap to Start (Fullscreen)";
             document.getElementById('mobileHint').style.display = 'block';
             
             document.addEventListener('click', (e) => {
-                if(e.target.closest('#settingsIcon') || e.target.closest('#settingsPanel') || e.target.closest('a') || e.target.closest('.mob-btn')) return;
+                if(e.target.closest('#settingsIcon') || e.target.closest('#settingsPanel') || e.target.closest('a')) return;
+                
+                // Request Fullscreen on first tap
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => console.log(err));
+                }
+
                 document.getElementById('instructions').style.display = 'none';
                 document.getElementById('settingsPanel').style.display = 'none';
                 document.getElementById('hud').style.display = 'block';
@@ -296,7 +289,6 @@
             let lookStartY = 0;
 
             document.addEventListener('touchstart', (e) => {
-                // Ignore touch if touching Settings
                 if(e.target.closest('#settingsPanel') || e.target.closest('#settingsIcon')) return;
 
                 for (let i = 0; i < e.changedTouches.length; i++) {
@@ -347,14 +339,6 @@
                     }
                 }
             });
-
-            const btnUp = document.getElementById('btnUp');
-            const btnDown = document.getElementById('btnDown');
-            
-            btnUp.addEventListener('touchstart', (e) => { e.preventDefault(); move.up = true; });
-            btnUp.addEventListener('touchend', (e) => { e.preventDefault(); move.up = false; });
-            btnDown.addEventListener('touchstart', (e) => { e.preventDefault(); move.down = true; });
-            btnDown.addEventListener('touchend', (e) => { e.preventDefault(); move.down = false; });
         }
 
         // --- SETTINGS LOGIC ---
@@ -363,21 +347,18 @@
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         });
 
-        // 1. Update Size
         document.getElementById('sizeSlider').addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
             if(pointsMesh) pointsMesh.material.size = val;
             document.getElementById('sizeVal').innerText = val.toFixed(2);
         });
 
-        // 2. Update Speed
         document.getElementById('speedSlider').addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
             settings.speed = val;
             document.getElementById('speedVal').innerText = val.toFixed(2);
         });
 
-        // 3. Update Shape
         document.getElementById('shapeSelect').addEventListener('change', (e) => {
             if(!pointsMesh) return;
             if(e.target.value === 'circle') {
@@ -390,7 +371,6 @@
             pointsMesh.material.needsUpdate = true;
         });
 
-        // 4. Teleport
         document.getElementById('goBtn').addEventListener('click', () => {
             const val = document.getElementById('searchInput').value.trim().toLowerCase();
             if(!val) return;
@@ -427,10 +407,8 @@
             const camRight = new THREE.Vector3();
             camRight.crossVectors(camLook, camera.up).normalize();
 
-            // PC Input
             const keyFwd = Number(move.fwd) - Number(move.bwd);
             const keySide = Number(move.right) - Number(move.left);
-            // Mobile Input
             const mobFwd = -touchInput.z; 
             const mobSide = touchInput.x;
 
@@ -439,15 +417,12 @@
 
             const accel = settings.speed * 15.0 * delta;
 
-            // Free Flight Logic
             if (Math.abs(totalFwd) > 0) velocity.addScaledVector(camLook, totalFwd * accel);
             if (Math.abs(totalSide) > 0) velocity.addScaledVector(camRight, totalSide * accel);
 
-            // Vertical
             if (move.up) velocity.y += accel;
             if (move.down) velocity.y -= accel;
 
-            // Mobile Look
             if (isMobile && (touchLookX !== 0 || touchLookY !== 0)) {
                 camera.rotation.y -= touchLookX * 3.0 * settings.speed;
                 camera.rotateX(-touchLookY * 3.0 * settings.speed);
@@ -507,7 +482,7 @@
                 camera.position.set(0, 0, 250);
                 document.getElementById('loading').style.display = 'none';
             } catch (err) {
-                document.getElementById('loading').innerText = "Error loading CSV";
+                document.getElementById('loading').innerText = "Error loading CSV (Use Local Server!)";
             }
         }
 
@@ -548,6 +523,7 @@
         const lookVector = new THREE.Vector3();
         function checkHover() {
             if (colorData.length === 0) return;
+            // Hover active on mobile always, PC only when locked
             if (!isMobile && !controls.isLocked) return; 
 
             const camPos = camera.position;
@@ -593,8 +569,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            const delta = Math.min(clock.getDelta(), 0.1);
-            updatePhysics(delta);
+            updatePhysics(Math.min(clock.getDelta(), 0.1));
             checkHover();
             renderer.render(scene, camera);
         }
