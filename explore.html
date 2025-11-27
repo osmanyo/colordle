@@ -14,12 +14,19 @@
     </script>
 
     <title>Colordle 3D - Explore Color Space</title>
-    <meta name="description" content="Visualize the CIELAB color space in 3D. Fly through thousands of named colors.">
+    <meta name="description" content="Visualize the CIELAB color space in 3D.">
     <meta property="og:title" content="Colordle 3D Color Explorer">
     <meta property="og:url" content="https://osmanyo.github.io/colordle/explore.html">
 
     <style>
-        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Helvetica Neue', Arial, sans-serif; user-select: none; touch-action: none; }
+        /* PREVENT SCROLLING / BOUNCING ON MOBILE */
+        html, body { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background: #050505; 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            user-select: none; -webkit-user-select: none; 
+            touch-action: none; /* Critical for smooth controls */
+        }
         
         /* --- UI OVERLAYS --- */
         #instructions {
@@ -44,7 +51,7 @@
         #hud {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             text-align: center;
-            max-width: 90%;
+            min-width: 200px; max-width: 90%;
             pointer-events: none;
             color: #fff; font-family: monospace; 
             background: rgba(0,0,0,0.6); padding: 10px 25px; border-radius: 30px;
@@ -93,10 +100,15 @@
         /* MOBILE HINT */
         #mobileHint {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            color: rgba(255,255,255,0.6); text-align: center; width: 100%;
+            color: rgba(255,255,255,0.5); text-align: center; width: 100%;
             font-size: 12px; pointer-events: none; display: none;
-            text-shadow: 0 1px 3px rgba(0,0,0,1);
+            text-shadow: 0 1px 2px rgba(0,0,0,1);
         }
+        
+        /* Virtual Joystick Zone Visuals (Optional, for debugging areas) */
+        .touch-zone { position: absolute; top:0; height: 100%; width: 50%; z-index: 1; }
+        #leftZone { left: 0; }
+        #rightZone { right: 0; }
     </style>
 </head>
 <body>
@@ -104,6 +116,10 @@
     <div id="loading">Loading Universe...</div>
     <div id="crosshair"></div>
     
+    <!-- Touch Zones (Invisible) -->
+    <div id="leftZone" class="touch-zone"></div>
+    <div id="rightZone" class="touch-zone"></div>
+
     <!-- SETTINGS ICON -->
     <div id="settingsIcon">
         <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
@@ -180,8 +196,8 @@
         <div id="colorHex" style="color: #ccc; font-size: 0.9em; margin-top:2px;">---</div>
     </div>
 
-    <!-- MOBILE UI -->
-    <div id="mobileHint">Left Side: Move (Joystick) • Right Side: Look</div>
+    <!-- MOBILE HINT -->
+    <div id="mobileHint">Left: Drag to Move • Right: Drag to Look</div>
 
     <script type="module">
         import * as THREE from 'https://esm.sh/three@0.160.0';
@@ -191,7 +207,7 @@
         // --- SETTINGS STATE ---
         let settings = {
             speed: 1.0,
-            friction: 0.92,
+            friction: 0.85, // Lower friction for snappier stop on mobile
             pointSize: 0.8
         };
 
@@ -207,7 +223,6 @@
         
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        // --- FIX FOR BLURRY MOBILE ---
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
         document.body.appendChild(renderer.domElement);
 
@@ -232,20 +247,20 @@
             });
         } else {
             // Mobile Setup
-            document.getElementById('startMsg').innerText = "Tap to Start (Fullscreen)";
-            document.getElementById('mobileHint').style.display = 'block';
+            document.getElementById('startMsg').innerText = "Tap to Start";
             
             document.addEventListener('click', (e) => {
                 if(e.target.closest('#settingsIcon') || e.target.closest('#settingsPanel') || e.target.closest('a')) return;
                 
-                // Request Fullscreen on first tap
+                // Fullscreen trigger
                 if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen().catch(err => console.log(err));
+                    document.documentElement.requestFullscreen().catch(() => {});
                 }
 
                 document.getElementById('instructions').style.display = 'none';
                 document.getElementById('settingsPanel').style.display = 'none';
                 document.getElementById('hud').style.display = 'block';
+                document.getElementById('mobileHint').style.display = 'block';
             });
         }
 
@@ -253,12 +268,11 @@
         const velocity = new THREE.Vector3();
         const move = { fwd: false, bwd: false, left: false, right: false, up: false, down: false };
         
-        // Mobile Vectors
+        // Mobile Variables
         const touchInput = { x: 0, z: 0 }; 
-        let touchLookX = 0; 
-        let touchLookY = 0; 
+        const lookSpeed = 0.004;
 
-        // Keyboard (PC)
+        // PC Keyboard
         document.addEventListener('keydown', (e) => {
             switch(e.code) {
                 case 'KeyW': move.fwd = true; break;
@@ -280,13 +294,17 @@
             }
         });
 
-        // Touch (Mobile)
+        // --- REVISED MOBILE TOUCH LOGIC (SMOOTHER) ---
         if (isMobile) {
             const halfWidth = window.innerWidth / 2;
             let moveTouchId = -1;
             let lookTouchId = -1;
-            let lookStartX = 0;
-            let lookStartY = 0;
+            
+            // We store the LAST position to calculate delta for looking
+            let lastLookX = 0;
+            let lastLookY = 0;
+            let moveOriginX = 0;
+            let moveOriginY = 0;
 
             document.addEventListener('touchstart', (e) => {
                 if(e.target.closest('#settingsPanel') || e.target.closest('#settingsIcon')) return;
@@ -294,33 +312,52 @@
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     const t = e.changedTouches[i];
                     if (t.pageX < halfWidth && moveTouchId === -1) {
+                        // Left Thumb: Movement Stick anchor
                         moveTouchId = t.identifier;
-                        touchInput.startX = t.pageX;
-                        touchInput.startY = t.pageY;
+                        moveOriginX = t.pageX;
+                        moveOriginY = t.pageY;
+                        touchInput.x = 0;
+                        touchInput.z = 0;
                     } else if (t.pageX > halfWidth && lookTouchId === -1) {
+                        // Right Thumb: Look anchor
                         lookTouchId = t.identifier;
-                        lookStartX = t.pageX;
-                        lookStartY = t.pageY;
+                        lastLookX = t.pageX;
+                        lastLookY = t.pageY;
                     }
                 }
             }, {passive: false});
 
             document.addEventListener('touchmove', (e) => {
-                e.preventDefault();
+                e.preventDefault(); // No scrolling
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     const t = e.changedTouches[i];
+                    
+                    // MOVEMENT (Joystick)
                     if (t.identifier === moveTouchId) {
-                        const dx = t.pageX - touchInput.startX;
-                        const dy = t.pageY - touchInput.startY;
-                        touchInput.x = Math.max(-1, Math.min(1, dx / 50));
-                        touchInput.z = Math.max(-1, Math.min(1, dy / 50));
-                    } else if (t.identifier === lookTouchId) {
-                        const dx = t.pageX - lookStartX;
-                        const dy = t.pageY - lookStartY;
-                        touchLookX = dx * 0.005; 
-                        touchLookY = dy * 0.005;
-                        lookStartX = t.pageX;
-                        lookStartY = t.pageY;
+                        const dx = t.pageX - moveOriginX;
+                        const dy = t.pageY - moveOriginY;
+                        // Normalize to -1...1 range, capped at 50px drag
+                        touchInput.x = Math.max(-1, Math.min(1, dx / 40));
+                        touchInput.z = Math.max(-1, Math.min(1, dy / 40));
+                    } 
+                    
+                    // LOOK (1:1 Direct control, no inertia)
+                    else if (t.identifier === lookTouchId) {
+                        const deltaX = t.pageX - lastLookX;
+                        const deltaY = t.pageY - lastLookY;
+                        
+                        // Apply rotation immediately
+                        camera.rotation.y -= deltaX * lookSpeed * settings.speed;
+                        camera.rotation.x -= deltaY * lookSpeed * settings.speed;
+                        
+                        // Clamp vertical look (prevent flipping over)
+                        camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+                        
+                        // Reset order for proper rotation
+                        camera.rotation.order = "YXZ"; 
+
+                        lastLookX = t.pageX;
+                        lastLookY = t.pageY;
                     }
                 }
             }, {passive: false});
@@ -334,8 +371,6 @@
                         touchInput.z = 0;
                     } else if (t.identifier === lookTouchId) {
                         lookTouchId = -1;
-                        touchLookX = 0;
-                        touchLookY = 0;
                     }
                 }
             });
@@ -400,13 +435,16 @@
         const clock = new THREE.Clock();
 
         function updatePhysics(delta) {
+            // Apply Friction
             velocity.multiplyScalar(settings.friction);
 
             const camLook = new THREE.Vector3();
             camera.getWorldDirection(camLook);
+            
             const camRight = new THREE.Vector3();
             camRight.crossVectors(camLook, camera.up).normalize();
 
+            // Calculate Inputs
             const keyFwd = Number(move.fwd) - Number(move.bwd);
             const keySide = Number(move.right) - Number(move.left);
             const mobFwd = -touchInput.z; 
@@ -417,21 +455,12 @@
 
             const accel = settings.speed * 15.0 * delta;
 
+            // Apply forces relative to camera look
             if (Math.abs(totalFwd) > 0) velocity.addScaledVector(camLook, totalFwd * accel);
             if (Math.abs(totalSide) > 0) velocity.addScaledVector(camRight, totalSide * accel);
 
             if (move.up) velocity.y += accel;
             if (move.down) velocity.y -= accel;
-
-            if (isMobile && (touchLookX !== 0 || touchLookY !== 0)) {
-                camera.rotation.y -= touchLookX * 3.0 * settings.speed;
-                camera.rotateX(-touchLookY * 3.0 * settings.speed);
-                camera.rotation.z = 0; 
-                touchLookX *= 0.8;
-                touchLookY *= 0.8;
-                if(Math.abs(touchLookX) < 0.001) touchLookX = 0;
-                if(Math.abs(touchLookY) < 0.001) touchLookY = 0;
-            }
 
             camera.position.add(velocity);
         }
@@ -492,13 +521,13 @@
         function createTextSprite(message, color) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = 256; canvas.height = 128;
-            ctx.font = "Bold 40px Arial";
+            canvas.width = 512; canvas.height = 256; // Higher res
+            ctx.font = "Bold 80px Arial";
             ctx.fillStyle = color;
             ctx.textAlign = "center";
-            ctx.fillText(message, 128, 80);
+            ctx.fillText(message, 256, 150);
             const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
-            sprite.scale.set(40, 20, 1);
+            sprite.scale.set(80, 40, 1);
             return sprite;
         }
 
@@ -523,7 +552,7 @@
         const lookVector = new THREE.Vector3();
         function checkHover() {
             if (colorData.length === 0) return;
-            // Hover active on mobile always, PC only when locked
+            // Always check on mobile, or if mouse locked on PC
             if (!isMobile && !controls.isLocked) return; 
 
             const camPos = camera.position;
@@ -539,9 +568,10 @@
                 const dz = p.z - camPos.z;
                 const distSq = dx*dx + dy*dy + dz*dz;
 
-                if (distSq < 600) { 
+                if (distSq < 2500) { // Range 50 units
                     const dist = Math.sqrt(distSq);
                     const dot = (dx/dist * lookVector.x) + (dy/dist * lookVector.y) + (dz/dist * lookVector.z);
+                    // Angle tolerance
                     if (dot > 0.999) {
                         if (dist < bestDist) {
                             bestDist = dist;
@@ -569,7 +599,8 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            updatePhysics(Math.min(clock.getDelta(), 0.1));
+            const delta = Math.min(clock.getDelta(), 0.1);
+            updatePhysics(delta);
             checkHover();
             renderer.render(scene, camera);
         }
