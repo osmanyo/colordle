@@ -146,7 +146,7 @@
             <label class="setting-label">Shape</label>
             <select id="shapeSelect">
                 <option value="square">Square</option>
-                <option value="circle">Circle</option>
+                <option value="circle" selected>Circle</option>
             </select>
         </div>
 
@@ -504,7 +504,7 @@
                 const geometry = new THREE.BufferGeometry();
                 geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
                 geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-                const material = new THREE.PointsMaterial({ size: settings.pointSize, vertexColors: true, sizeAttenuation: true });
+                const material = new THREE.PointsMaterial({ size: settings.pointSize, vertexColors: true, sizeAttenuation: true,map: createCircleTexture() });
                 pointsMesh = new THREE.Points(geometry, material);
                 scene.add(pointsMesh);
                 
@@ -533,16 +533,16 @@
 
         function addLabels() {
             const g = new THREE.Group();
-            const gridHelper = new THREE.GridHelper(600, 20, 0x222222, 0x111111);
-            gridHelper.position.y = -200;
+            const gridHelper = new THREE.GridHelper(1000, 20, 0x222222, 0x111111);
+            gridHelper.position.y = -250;
             g.add(gridHelper);
 
-            const lTop = createTextSprite("+Lightness", "#ffffff"); lTop.position.set(0, 220, 0); g.add(lTop);
-            const lBot = createTextSprite("-Lightness", "#555555"); lBot.position.set(0, -220, 0); g.add(lBot);
-            const aPos = createTextSprite("+A (Red)", "#ff4444"); aPos.position.set(200, 0, 0); g.add(aPos);
-            const aNeg = createTextSprite("-A (Green)", "#44ff44"); aNeg.position.set(-200, 0, 0); g.add(aNeg);
-            const bPos = createTextSprite("+B (Yellow)", "#ffff44"); bPos.position.set(0, 0, 200); g.add(bPos);
-            const bNeg = createTextSprite("-B (Blue)", "#4444ff"); bNeg.position.set(0, 0, -200); g.add(bNeg);
+            const lTop = createTextSprite("+Lightness", "#ffffff"); lTop.position.set(0, 250, 0); g.add(lTop);
+            const lBot = createTextSprite("-Lightness", "#555555"); lBot.position.set(0, -250, 0); g.add(lBot);
+            const aPos = createTextSprite("+A (Red)", "#ff4444"); aPos.position.set(450, 0, 0); g.add(aPos);
+            const aNeg = createTextSprite("-A (Green)", "#44ff44"); aNeg.position.set(-450, 0, 0); g.add(aNeg);
+            const bPos = createTextSprite("+B (Yellow)", "#ffff44"); bPos.position.set(0, 0, 450); g.add(bPos);
+            const bNeg = createTextSprite("-B (Blue)", "#4444ff"); bNeg.position.set(0, 0, -450); g.add(bNeg);
 
             scene.add(g);
         }
