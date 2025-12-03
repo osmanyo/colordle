@@ -157,6 +157,12 @@
             </div>
             <input type="range" id="speedSlider" min="0.01" max="4" step="0.1" value="0.5">
         </div>
+        <!-- FPS TOGGLE -->
+        <div class="setting-row" style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="fpsToggle" style="margin:0;">Show FPS</label>
+            <input type="checkbox" id="fpsToggle" style="width: auto; cursor: pointer;">
+        </div>
+    </div> <!-- Closing settingsPanel -->
     </div>
     
     <!-- START SCREEN -->
@@ -203,7 +209,18 @@
         import * as THREE from 'https://esm.sh/three@0.160.0';
         import { PointerLockControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
         import { converter, parse } from 'https://esm.sh/culori@3';
+        import Stats from 'https://esm.sh/three@0.160.0/examples/jsm/libs/stats.module.js';
 
+    // SETUP STATS (Hidden by default)
+    const stats = new Stats();
+    stats.dom.style.display = 'none'; // Default Off
+    document.body.appendChild(stats.dom);
+
+    // WIRE UP SETTINGS CHECKBOX
+    const fpsToggle = document.getElementById('fpsToggle');
+    fpsToggle.addEventListener('change', (e) => {
+        stats.dom.style.display = e.target.checked ? 'block' : 'none';
+    });
 
         let settings = {
             speed: 0.5,
@@ -227,6 +244,10 @@
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050505);
         scene.fog = new THREE.FogExp2(0x050505, 0.0015);
+        // --- RAYCASTER SETUP ---
+        const raycaster = new THREE.Raycaster();
+        const center = new THREE.Vector2(0, 0); // (0,0) is the center of the screen
+        raycaster.params.Points.threshold = 0.5; // How "thick" the laser is. Adjust this if selecting is too hard/easy.
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
         
@@ -430,12 +451,13 @@
         });
 
         function createCircleTexture() {
+            const size = 128; 
             const canvas = document.createElement('canvas');
-            canvas.width = 32; canvas.height = 32;
+            canvas.width = size; canvas.height = size;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(16, 16, 14, 0, Math.PI*2);
+            ctx.arc(size/2, size/2, (size/2) - 2, 0, Math.PI*2);
             ctx.fill();
             return new THREE.CanvasTexture(canvas);
         }
@@ -500,7 +522,7 @@
                     if (parsed) {
                         const lab = toLab(parsed);
                         const x = lab.a * 3; 
-                        const y = (lab.l - 50) * 4; 
+                        const y = (lab.l - 50) * 3; 
                         const z = lab.b * 3; 
 
                         positions.push(x, y, z);
@@ -560,47 +582,36 @@
         // --- HOVER ---
         const lookVector = new THREE.Vector3();
         function checkHover() {
-            if (colorData.length === 0) return;
-            // Always check on mobile, or if mouse locked on PC
-            if (!isMobile && !controls.isLocked) return; 
+            // 1. If we haven't loaded the mesh or user isn't locked (on PC), stop.
+            if (!pointsMesh || (!isMobile && !controls.isLocked)) return;
 
-            const camPos = camera.position;
-            camera.getWorldDirection(lookVector);
+            // 2. Shoot the laser
+            raycaster.setFromCamera(center, camera);
 
-            let bestDist = Infinity;
-            let bestIdx = -1;
+            // 3. Check for hits
+            // This calculates if the laser hits any point in our pointsMesh
+            const intersects = raycaster.intersectObject(pointsMesh);
 
-            for (let i = 0; i < colorData.length; i += 1) { 
-                const p = colorData[i];
-                const dx = p.x - camPos.x;
-                const dy = p.y - camPos.y;
-                const dz = p.z - camPos.z;
-                const distSq = dx*dx + dy*dy + dz*dz;
+            if (intersects.length > 0) {
+                // 4. Get the closest hit (intersects is sorted by distance automatically)
+                // .index corresponds exactly to the order in our colorData array
+                const index = intersects[0].index;
+                const c = colorData[index];
 
-                if (distSq < 2500) { // Range 50 units
-                    const dist = Math.sqrt(distSq);
-                    const dot = (dx/dist * lookVector.x) + (dy/dist * lookVector.y) + (dz/dist * lookVector.z);
-                    // Angle tolerance
-                    if (dot > 0.999) {
-                        if (dist < bestDist) {
-                            bestDist = dist;
-                            bestIdx = i;
-                        }
-                    }
-                }
-            }
-
-            if (bestIdx !== -1) {
-                const c = colorData[bestIdx];
+                // 5. Update HUD
                 document.getElementById('colorName').innerText = c.name;
                 document.getElementById('colorHex').innerText = c.hex;
                 document.getElementById('colorName').style.color = c.hex;
+                
+                // Highlight Crosshair
                 document.getElementById('crosshair').style.width = "16px";
                 document.getElementById('crosshair').style.height = "16px";
             } else {
+                // 6. Reset HUD
                 document.getElementById('colorName').innerText = "---";
                 document.getElementById('colorHex').innerText = "---";
                 document.getElementById('colorName').style.color = "white";
+                
                 document.getElementById('crosshair').style.width = "8px";
                 document.getElementById('crosshair').style.height = "8px";
             }
@@ -612,6 +623,7 @@
             updatePhysics(delta);
             checkHover();
             renderer.render(scene, camera);
+            stats.update();
         }
         animate();
 
