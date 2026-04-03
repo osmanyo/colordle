@@ -21,17 +21,23 @@
     
     <meta property="og:title" content="Colordle - Guess the Daily Color">
     <meta property="og:description" content="Can you guess today's color?">
-    <!-- <meta property="og:image" content="https://osmanyo.github.io/colordle/preview-image.png"> Add a screenshot later -->
     <meta property="og:url" content="https://osmanyo.github.io/colordle/">
     <meta property="og:type" content="website">
     
     <link rel="canonical" href="https://osmanyo.github.io/colordle/" />
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Colordle</title>
     <!-- Animated Rainbow C Icon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='red'%3E%3Canimate attributeName='stop-color' values='red;violet;blue;cyan;green;yellow;red' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3Cstop offset='100%25' stop-color='yellow'%3E%3Canimate attributeName='stop-color' values='yellow;red;violet;blue;cyan;green;yellow' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext y='.9em' font-size='90' font-family='Arial, sans-serif' font-weight='bold' fill='url(%23g)'%3EC%3C/text%3E%3C/svg%3E">
     <style>
+        .daily-stats {
+            background: #1a1a1b; border: 1px solid #3a3a3c;
+            border-radius: 8px; padding: 12px; margin-bottom: 15px;
+            display: flex; justify-content: space-around; font-size: 13px;
+            text-align: center; color: #aaa;
+        }
+        .stat-val { display: block; color: #fff; font-size: 18px; font-weight: bold; margin-bottom: 4px; }
+
         :root {
             --bg-color: #121213;
             --text-color: #ffffff;
@@ -149,10 +155,8 @@
         .guess-history {
             display: flex; flex-direction: column; gap: 8px; margin-top: 20px;
         }
-        
 
         .guess-row {
-            
             display: flex; align-items: center;
             padding: 15px 15px;
             border-radius: 6px;
@@ -189,6 +193,7 @@
 <body>
 
     <a href="explore.html" style="position:absolute; top:20px; left:20px; color:#00d2ff; text-decoration:none; font-weight:bold; font-family:sans-serif;">Explore in 3D</a>
+    
     <!-- SETTINGS ICON -->
     <div id="settingsIcon">
         <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
@@ -211,12 +216,10 @@
             <select id="sortOrderInput">
                 <option value="best">Best Score First</option>
                 <option value="latest">Latest Guess First</option>
-                
             </select>
         </div>
         <div class="separator"></div>
         <div class="setting-row">
- 
             <button id="resetGameBtn" class="danger-btn">Reset Current Game</button>
         </div>
     </div>
@@ -233,6 +236,12 @@
             <div id="suggestions" class="suggestions-list"></div>
         </div>
 
+        <div class="daily-stats">
+            <div><span class="stat-val" id="statWinners">0</span>Winners</div>
+            <div><span class="stat-val" id="statAvg">0</span>Avg Tries</div>
+            <div><span class="stat-val" id="statRank">--</span>Your Rank</div>
+        </div>  
+
         <div id="historyList" class="guess-history"></div>
     </div>
 
@@ -243,10 +252,26 @@
     </div>
 
     <script type="module">
+        // 1. ALL IMPORTS GO HERE AT THE TOP
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, updateDoc, increment, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
 
-        const CSV_URL = 'colornames.csv';
+        // 2. INITIALIZE FIREBASE HERE
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_349ubNBxT7hkEPeny6T10Ary9wRtUCw",
+            authDomain: "colordle-10261.firebaseapp.com",
+            projectId: "colordle-10261",
+            storageBucket: "colordle-10261.firebasestorage.app",
+            messagingSenderId: "763118809880",
+            appId: "1:763118809880:web:fa6003f660c495eb55a46d",
+            measurementId: "G-50GQQV2KZN"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
+        // 3. REST OF GAME LOGIC
+        const CSV_URL = 'colornames.csv';
         const toLab = converter('lab');
         const calcDeltaE = differenceCiede2000();
 
@@ -260,32 +285,7 @@
         let maxSuggestions = 0;
         let sortOrder = 'best'; 
 
-        let gameState = { seed: null, won: false, guesses: [] };
-
-        // --- CHEAT / DEBUG TOOL ---
-        window.setTarget = (query) => {
-            const match = ALL_COLORS.find(c => 
-                c.name.toLowerCase() === query.toLowerCase() || 
-                c.hex.toLowerCase() === query.toLowerCase()
-            );
-
-            if (match) {
-                // 1. Update Target
-                targetColor = match;
-                targetLab = toLab(parse(match.hex));
-                
-                // 2. Reset Game State so you can play fresh
-                gameState.won = false;
-                gameState.guesses = [];
-                guessCount = 0;
-                document.getElementById('targetDisplay').style.display = 'none';
-                renderHistory();
-                
-                console.log(`✅ Target set to: ${match.name} (${match.hex})`);
-            } else {
-                console.error(`❌ Color "${query}" not found in database.`);
-            }
-        };
+        let gameState = { seed: null, won: false, guesses: [], submitted: false, rank: null };
 
         async function loadColors() {
             try {
@@ -311,8 +311,6 @@
             }
         }
 
-        window.setGameSeed = (seed) => initGame(seed);
-
         function initGame(customSeed = null) {
             document.getElementById('historyList').innerHTML = '';
             document.getElementById('targetDisplay').style.display = 'none';
@@ -327,14 +325,18 @@
                 const parsed = JSON.parse(savedData);
                 if (parsed.seed === currentSeed) {
                     gameState = parsed;
+                    // Fix for older saves that didn't have these
+                    if (gameState.submitted === undefined) gameState.submitted = false;
+                    if (gameState.rank === undefined) gameState.rank = null;
+                    
                     guessCount = gameState.guesses.length; 
                 } else {
-                    gameState = { seed: currentSeed, won: false, guesses: [] };
+                    gameState = { seed: currentSeed, won: false, guesses: [], submitted: false, rank: null };
                     guessCount = 0;
                     localStorage.removeItem('colordle_save');
                 }
             } else {
-                gameState = { seed: currentSeed, won: false, guesses: [] };
+                gameState = { seed: currentSeed, won: false, guesses: [], submitted: false, rank: null };
                 guessCount = 0;
             }
 
@@ -348,18 +350,18 @@
 
             renderHistory();
             if (gameState.won) revealWin(false);
+            
+            // Sync Firebase stats at load
+            syncStats();
         }
 
         function resetCurrentGame() {
             if(!confirm("Are you sure you want to reset progress for this color?")) return;
             
-            // Reset logic
-            gameState.guesses = [];
-            gameState.won = false;
+            gameState = { seed: currentSeed, won: false, guesses: [], submitted: false, rank: null };
             guessCount = 0;
-            saveGame(); // Overwrites storage with empty state
+            saveGame();
 
-            // UI Reset
             document.getElementById('historyList').innerHTML = '';
             document.getElementById('targetDisplay').style.display = 'none';
             document.getElementById('settingsModal').style.display = 'none';
@@ -424,6 +426,7 @@
             
             if (deltaE < 0.5) {
                 gameState.won = true;
+                submitWinToFirebase(); // Fire the win to the database!
                 revealWin(true);
             }
 
@@ -445,22 +448,14 @@
 
             if (gameState.guesses.length === 0) return;
 
-            // Create a copy of the array so we don't mess up the game state
             let history = [...gameState.guesses];
             let displayList = [];
 
             if (sortOrder === 'latest') {
-                // Option A: Just show newest to oldest
                 displayList = history.reverse();
             } else {
-                // Option B: Best Score (Modified)
-                // 1. Remove the most recent guess (it must be first)
                 const latestGuess = history.pop();
-
-                // 2. Sort the REMAINING older guesses by score (High -> Low)
                 history.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
-
-                // 3. Combine them: [Latest, ...Best of the Rest]
                 displayList = [latestGuess, ...history];
             }
 
@@ -472,9 +467,6 @@
                 row.style.backgroundColor = g.hex;
                 row.style.color = textColor;
                 row.style.borderColor = textColor === '#ffffff' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)';
-
-                // Optional: Add a little marker to the latest guess if you want
-                // const isLatest = g.number === gameState.guesses.length;
 
                 row.innerHTML = `
                     <span class="guess-num">#${g.number}</span>
@@ -498,6 +490,51 @@
             if(animate) window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // --- FIREBASE STATS FUNCTIONS ---
+        function syncStats() {
+            onSnapshot(doc(db, "dailyStats", currentSeed.toString()), (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('statWinners').innerText = data.winnerCount || 0;
+                    const avg = data.winnerCount > 0 ? (data.totalTries / data.winnerCount).toFixed(1) : 0;
+                    document.getElementById('statAvg').innerText = avg;
+                    
+                    if (gameState.rank) {
+                        document.getElementById('statRank').innerText = `#${gameState.rank}`;
+                    }
+                }
+            });
+        }
+
+        async function submitWinToFirebase() {
+            if (gameState.submitted) return; 
+
+            const statsRef = doc(db, "dailyStats", currentSeed.toString());
+            const tries = gameState.guesses.length;
+
+            try {
+                const snap = await getDoc(statsRef);
+                let myRank = 1;
+
+                if (!snap.exists()) {
+                    await setDoc(statsRef, { winnerCount: 1, totalTries: tries });
+                } else {
+                    myRank = snap.data().winnerCount + 1;
+                    await updateDoc(statsRef, {
+                        winnerCount: increment(1),
+                        totalTries: increment(tries)
+                    });
+                }
+
+                gameState.submitted = true;
+                gameState.rank = myRank;
+                document.getElementById('statRank').innerText = `#${myRank}`;
+                saveGame();
+            } catch (err) {
+                console.error("Firebase submit error:", err);
+            }
+        }
+
         // --- EVENTS ---
         const inputEl = document.getElementById('guessInput');
         const previewEl = document.getElementById('inputPreview');
@@ -519,7 +556,6 @@
             settingsModal.style.display = isVisible ? 'none' : 'block';
         });
 
-        // RESET BTN
         document.getElementById('resetGameBtn').addEventListener('click', resetCurrentGame);
 
         const maxInput = document.getElementById('maxSuggestionsInput');
