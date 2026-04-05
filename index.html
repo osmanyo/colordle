@@ -30,12 +30,31 @@
     <!-- Animated Rainbow C Icon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='red'%3E%3Canimate attributeName='stop-color' values='red;violet;blue;cyan;green;yellow;red' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3Cstop offset='100%25' stop-color='yellow'%3E%3Canimate attributeName='stop-color' values='yellow;red;violet;blue;cyan;green;yellow' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext y='.9em' font-size='90' font-family='Arial, sans-serif' font-weight='bold' fill='url(%23g)'%3EC%3C/text%3E%3C/svg%3E">
     <style>
+        
+
+        #feedbackIcon {
+            position: absolute; top: 20px; right: 100px;
+            cursor: pointer; z-index: 20; opacity: 0.7; transition: opacity 0.2s;
+        }
+        #feedbackIcon:hover { opacity: 1; }
+
+        #feedbackModal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #1a1a1a; border: 1px solid var(--border-color); padding: 20px;
+            border-radius: 12px; width: 300px; z-index: 300; box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        }
+        #feedbackText {
+            width: 100%; height: 100px; background: #000; color: white;
+            border: 1px solid #333; border-radius: 6px; padding: 10px;
+            box-sizing: border-box; resize: none; margin-bottom: 10px; font-family: inherit;
+        }
         .daily-stats {
             background: #1a1a1b; border: 1px solid #3a3a3c;
             border-radius: 8px; padding: 12px; margin-bottom: 15px;
             display: flex; justify-content: space-around; font-size: 13px;
             text-align: center; color: #aaa;
         }
+
         .stat-val { display: block; color: #fff; font-size: 18px; font-weight: bold; margin-bottom: 4px; }
 
         :root {
@@ -204,6 +223,23 @@
             <path fill="white" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" />
         </svg>
     </a>
+
+    <!-- FEEDBACK ICON -->
+    <div id="feedbackIcon" title="Send Feedback">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+        </svg>
+    </div>
+
+    <!-- FEEDBACK MODAL -->
+    <div id="feedbackModal">
+        <h3 style="margin-top:0; font-size:16px;">Send Feedback</h3>
+        <textarea id="feedbackText" placeholder="Found a bug? Have an idea? Let me know!"></textarea>
+        <div style="display: flex; gap: 10px;">
+            <button id="closeFeedbackBtn" style="flex: 1; background: #333; color: white;">Cancel</button>
+            <button id="submitFeedbackBtn" style="flex: 1; background: var(--accent-color); color: black;">Send</button>
+        </div>
+    </div>
 
     <!-- SETTINGS MODAL -->
     <div id="settingsModal">
@@ -639,6 +675,57 @@
         });
 
         loadColors();
+
+        // --- FEEDBACK LOGIC ---
+        const feedbackIcon = document.getElementById('feedbackIcon');
+        const feedbackModal = document.getElementById('feedbackModal');
+        const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+        const closeFeedbackBtn = document.getElementById('closeFeedbackBtn');
+        const feedbackText = document.getElementById('feedbackText');
+
+        // Open Modal
+        feedbackIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            feedbackModal.style.display = 'block';
+            feedbackText.focus();
+        });
+
+        // Close Modal
+        closeFeedbackBtn.addEventListener('click', () => {
+            feedbackModal.style.display = 'none';
+        });
+
+        // Submit to Firebase
+        submitFeedbackBtn.addEventListener('click', async () => {
+            const text = feedbackText.value.trim();
+            if (!text) return;
+            
+            submitFeedbackBtn.innerText = "Sending...";
+            submitFeedbackBtn.disabled = true;
+            
+            try {
+                // We use Date.now() to generate a unique ID for each feedback message
+                await setDoc(doc(db, "feedback", Date.now().toString()), {
+                    message: text,
+                    seed: currentSeed, // Good to know which color they are playing
+                    timestamp: new Date().toISOString()
+                });
+                
+                feedbackText.value = '';
+                submitFeedbackBtn.innerText = "Sent! Thanks!";
+                
+                setTimeout(() => {
+                    feedbackModal.style.display = 'none';
+                    submitFeedbackBtn.innerText = "Send";
+                    submitFeedbackBtn.disabled = false;
+                }, 2000);
+                
+            } catch (e) {
+                console.error("Feedback error", e);
+                submitFeedbackBtn.innerText = "Error. Try again.";
+                submitFeedbackBtn.disabled = false;
+            }
+        });
 
     </script>
 </body>
