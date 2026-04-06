@@ -316,6 +316,7 @@
         let targetColor = null;
         let targetLab = null;
         let currentSeed = null;
+        let unsubscribeStats = null;
 
         // Preferences
         let maxSuggestions = 0;
@@ -527,17 +528,30 @@
         }
 
         // --- FIREBASE STATS FUNCTIONS ---
-        function syncStats() {
-            onSnapshot(doc(db, "dailyStats", currentSeed.toString()), (snap) => {
+       function syncStats() {
+        
+            if (unsubscribeStats) {
+                unsubscribeStats();
+            }
+
+            
+            unsubscribeStats = onSnapshot(doc(db, "dailyStats", currentSeed.toString()), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
                     document.getElementById('statWinners').innerText = data.winnerCount || 0;
-                    const avg = data.winnerCount > 0 ? (data.totalTries / data.winnerCount).toFixed(1) : 0;
+                    const avg = data.winnerCount > 0 ? (data.totalTries / data.winnerCount).toFixed(1) : "0";
                     document.getElementById('statAvg').innerText = avg;
                     
                     if (gameState.rank) {
                         document.getElementById('statRank').innerText = `#${gameState.rank}`;
+                    } else {
+                        document.getElementById('statRank').innerText = `--`;
                     }
+                } else {
+                    
+                    document.getElementById('statWinners').innerText = "0";
+                    document.getElementById('statAvg').innerText = "0";
+                    document.getElementById('statRank').innerText = "--";
                 }
             });
         }
