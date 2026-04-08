@@ -30,6 +30,14 @@
     <!-- Animated Rainbow C Icon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='red'%3E%3Canimate attributeName='stop-color' values='red;violet;blue;cyan;green;yellow;red' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3Cstop offset='100%25' stop-color='yellow'%3E%3Canimate attributeName='stop-color' values='yellow;red;violet;blue;cyan;green;yellow' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext y='.9em' font-size='90' font-family='Arial, sans-serif' font-weight='bold' fill='url(%23g)'%3EC%3C/text%3E%3C/svg%3E">
     <style>
+
+        .icon-btn {
+            padding: 0; width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            background: #444; color: #fff; border: none; 
+            border-radius: 4px; cursor: pointer; transition: background 0.2s;
+        }
+        .icon-btn:hover { background: #666; }
         
 
         #feedbackIcon {
@@ -199,7 +207,7 @@
         }
         #seedControl span { font-size: 12px; color: #aaa; margin-right: 5px; }
         #seedInput {
-            width: 60px; padding: 5px; font-size: 13px; height: auto;
+            width: 80px; padding: 5px; font-size: 13px; height: auto;
             text-align: center; background: #000; border: 1px solid #333; color:white;
         }
         #seedBtn {
@@ -285,6 +293,26 @@
         <span>Seed:</span>
         <input type="number" id="seedInput" value="">
         <button id="seedBtn">Load</button>
+        
+        <!-- Separator -->
+        <div style="width: 1px; height: 20px; background: #444; margin: 0 2px;"></div>
+        
+        <!-- Random Icon Button -->
+        <button id="randomBtn" class="icon-btn" title="Play Random Seed">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1" fill="currentColor"></circle>
+                <circle cx="15.5" cy="15.5" r="1" fill="currentColor"></circle>
+                <circle cx="15.5" cy="8.5" r="1" fill="currentColor"></circle>
+                <circle cx="8.5" cy="15.5" r="1" fill="currentColor"></circle>
+                <circle cx="12" cy="12" r="1" fill="currentColor"></circle>
+            </svg>
+        </button>
+        
+        <!-- Share Icon Button -->
+        <button id="shareBtn" class="icon-btn" title="Share this Match">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        </button>
     </div>
 
     <script type="module">
@@ -342,7 +370,7 @@
                         }
                     }
                 }
-                initGame();
+
             } catch (err) {
                 console.error("Error loading CSV", err);
             }
@@ -688,7 +716,58 @@
             if(!isNaN(val)) initGame(val);
         });
 
-        loadColors();
+        // --- RANDOM & SHARE BUTTONS ---
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            const randomSeed = Math.floor(Math.random() * 999999);
+            window.location.href = `?seed=${randomSeed}`;
+        });
+
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            // Generate link with the current seed
+            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}`;
+            
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const btn = document.getElementById('shareBtn');
+                const originalIcon = btn.innerHTML;
+                
+                // Switch to a green Checkmark icon
+                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                
+                // Change back after 2 seconds
+                setTimeout(() => {
+                    btn.innerHTML = originalIcon;
+                }, 2000);
+            });
+        });
+
+        // Check the URL for a ?seed= parameter when the page loads
+        loadColors().then(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlSeed = urlParams.get('seed');
+            
+            if (urlParams.has('seed') && !isNaN(parseInt(urlSeed))) {
+                initGame(parseInt(urlSeed));
+            } else {
+                initGame(); // Load the daily challenge by default
+            }
+        });
+
+        // Random Seed Button
+        document.getElementById('randomSeedBtn').addEventListener('click', () => {
+            const randomSeed = Math.floor(Math.random() * 999999);
+            window.location.href = `?seed=${randomSeed}`;
+        });
+
+        // Share Link Button
+        document.getElementById('shareLinkBtn').addEventListener('click', (e) => {
+            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const btn = e.target;
+                const originalText = btn.innerText;
+                btn.innerText = "✅ Link Copied!";
+                setTimeout(() => btn.innerText = originalText, 2000);
+            });
+        });
 
         // --- FEEDBACK LOGIC ---
         const feedbackIcon = document.getElementById('feedbackIcon');
