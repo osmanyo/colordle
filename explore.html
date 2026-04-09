@@ -19,6 +19,11 @@
     <meta property="og:url" content="https://osmanyo.github.io/colordle/explore.html">
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='red'%3E%3Canimate attributeName='stop-color' values='red;violet;blue;cyan;green;yellow;red' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3Cstop offset='100%25' stop-color='yellow'%3E%3Canimate attributeName='stop-color' values='yellow;red;violet;blue;cyan;green;yellow' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext y='.9em' font-size='90' font-family='Arial, sans-serif' font-weight='bold' fill='url(%23g)'%3EC%3C/text%3E%3C/svg%3E"><style>
+        
+        
+        
+        
+
         /* PREVENT SCROLLING / BOUNCING ON MOBILE */
         html, body { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -29,6 +34,7 @@
         }
         
         /* --- UI OVERLAYS --- */
+        
         #instructions {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: white; text-align: center; pointer-events: none;
@@ -119,12 +125,23 @@
         .touch-zone { position: absolute; top:0; height: 100%; width: 50%; z-index: 1; }
         #leftZone { left: 0; }
         #rightZone { right: 0; }
+
+        #compassContainer {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            z-index: 100;
+            pointer-events: none; /* Let clicks pass through to the game */
+        }
     </style>
 </head>
 <body>
 
     <div id="loading">Loading Universe...</div>
     <div id="crosshair"></div>
+    <div id="compassContainer"></div>
     
     <!-- Touch Zones (Invisible) -->
     <div id="leftZone" class="touch-zone"></div>
@@ -273,6 +290,65 @@
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
         document.body.appendChild(renderer.domElement);
 
+           // --- MINI-COMPASS WIDGET (RE-FIXED) ---
+const compassContainer = document.getElementById('compassContainer');
+const compassRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+compassRenderer.setSize(120, 120);
+compassRenderer.setPixelRatio(window.devicePixelRatio);
+compassContainer.appendChild(compassRenderer.domElement);
+
+const compassScene = new THREE.Scene();
+
+// We use a fixed camera that NEVER moves
+const compassCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
+compassCamera.position.set(0, 0, 5); 
+compassCamera.lookAt(0, 0, 0);
+
+// This group will hold all our arrows so we can rotate them together
+const compassGroup = new THREE.Group();
+compassScene.add(compassGroup);
+
+// Create Axis Arrows
+function createCompassArrow(dir, color, labelText) {
+    const arrowGroup = new THREE.Group();
+    
+    // The Arrow (Intersects at 0,0,0)
+    const arrow = new THREE.ArrowHelper(dir, new THREE.Vector3(0,0,0), 1.2, color, 0.4, 0.25);
+    arrowGroup.add(arrow);
+
+    // Text Label
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.font = 'bold 30px Arial'; ctx.fillStyle = color;
+    ctx.textAlign = 'center'; ctx.fillText(labelText, 32, 40);
+    
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ 
+        map: new THREE.CanvasTexture(canvas), transparent: true 
+    }));
+    sprite.position.copy(dir).multiplyScalar(1.5); // Move label to the tip
+    sprite.scale.set(0.8, 0.8, 1);
+    arrowGroup.add(sprite);
+    
+    compassGroup.add(arrowGroup);
+}
+
+// Add the 6 directions
+createCompassArrow(new THREE.Vector3(1, 0, 0), '#ff4444', '+a');  // Red
+createCompassArrow(new THREE.Vector3(-1, 0, 0), '#44ff44', '-a'); // Green
+createCompassArrow(new THREE.Vector3(0, 1, 0), '#ffffff', '+L');  // White
+createCompassArrow(new THREE.Vector3(0, -1, 0), '#888888', '-L'); // Grey
+createCompassArrow(new THREE.Vector3(0, 0, 1), '#ffff44', '+b');  // Yellow
+createCompassArrow(new THREE.Vector3(0, 0, -1), '#4444ff', '-b'); // Blue
+
+// Add a tiny white sphere at the intersection point (the core)
+const core = new THREE.Mesh(
+    new THREE.SphereGeometry(0.1, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+);
+compassGroup.add(core);
+
+
         // --- CONTROLS LOGIC ---
         let controls;
         if (!isMobile) {
@@ -280,7 +356,9 @@
             
             document.addEventListener('click', (e) => {
                 if(e.target.closest('#settingsIcon') || e.target.closest('#settingsPanel') || e.target.closest('a')) return;
-                controls.lock();
+                controls.lock(
+            {unadjustedMovement: true,}
+                );
             });
 
             controls.addEventListener('lock', () => {
@@ -634,14 +712,27 @@
             }
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = Math.min(clock.getDelta(), 0.1);
-            updatePhysics(delta);
-            checkHover();
-            renderer.render(scene, camera);
-            stats.update();
-        }
+        // --- UPDATE THE ANIMATE LOOP ---
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = Math.min(clock.getDelta(), 0.1);
+    
+    updatePhysics(delta);
+    checkHover();
+    
+    // 1. Render Main Scene
+    renderer.render(scene, camera);
+    
+    // 2. Sync Compass Group rotation
+    // We take the world rotation of your main camera and apply the INVERSE to the arrows.
+    // This makes the arrows look like they are "fixed" in space while you turn.
+    compassGroup.quaternion.copy(camera.quaternion).invert();
+    
+    // 3. Render Compass
+    compassRenderer.render(compassScene, compassCamera);
+    
+    if (stats) stats.update();
+}
         animate();
 
         window.addEventListener('resize', () => {
@@ -649,6 +740,10 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+             
+
+            
     </script>
 </body>
 </html>
