@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H57NFG20DE"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-H57NFG20DE');
+    </script>
+    <!-- End Google tag -->
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colordle - Image Color Picker</title>
+    <style>
+        :root { --bg: #121213; --text: #fff; --accent: #00d2ff; --border: #3a3a3c; }
+        body { 
+            background: var(--bg); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; 
+            margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        /* --- COMPACT TOP TOOLBAR --- */
+        #toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px; background: rgba(20, 20, 20, 0.95);
+            border-bottom: 1px solid var(--border); z-index: 10;
+        }
+        
+        .toolbar-group { display: flex; align-items: center; gap: 10px; }
+
+        .btn {
+            background: var(--accent); color: #000; padding: 6px 12px; 
+            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;
+            border: none; text-decoration: none; display: inline-flex; align-items: center;
+        }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid #555; }
+        .btn-outline:hover { background: #333; }
+        
+        .slider-container { display: flex; align-items: center; gap: 8px; background: #000; padding: 4px 10px; border-radius: 6px; border: 1px solid #555;}
+        input[type="range"] { width: 70px; cursor: pointer; }
+        #sampleDisplay { font-size: 12px; color: #aaa; width: 35px; text-align: right; font-family: monospace;}
+
+        /* --- MAXIMIZED IMAGE CONTAINER --- */
+        #imageContainer { 
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            background: #000; position: relative; overflow: hidden; cursor: crosshair;
+        }
+        img { 
+            max-width: 100%; max-height: 100%; 
+            object-fit: contain; pointer-events: auto;
+        }
+
+        #emptyState {
+            position: absolute; color: #666; pointer-events: none; text-align: center;
+        }
+
+        /* --- FLOATING RESULT BOX --- */
+        #resultBox { 
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(26, 26, 27, 0.95); border: 1px solid var(--border); 
+            border-radius: 12px; display: none; text-align: center; width: 340px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            padding: 20px; z-index: 100;
+            transition: background 0.3s, border-color 0.3s; /* Smooth theme transitions */
+        }
+        
+        .swatches { display: flex; justify-content: space-around; margin-bottom: 15px; align-items: flex-start; }
+        .swatch-item { display: flex; flex-direction: column; align-items: center; width: 50%; }
+        
+        .circle { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #444; margin-bottom: 10px; }
+        
+        .color-title { font-size: 13px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.3s; }
+        .color-hex { font-family: monospace; font-size: 13px; color: #aaa; transition: color 0.3s;}
+        
+        #closeResult { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #888; font-weight: bold; padding: 5px; transition: color 0.3s; }
+        #closeResult:hover { color: white; }
+        
+        #accuracy { font-size: 13px; color: #888; margin: 0; padding-top: 10px; border-top: 1px solid #333; transition: color 0.3s, border-color 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div id="toolbar">
+        <div class="toolbar-group">
+            <a href="index.html" class="btn btn-outline" title="Back to Game">← Back</a>
+        </div>
+        
+        <div class="toolbar-group">
+            <div class="slider-container" title="Adjust sample circle size">
+                <span style="font-size: 12px; color: #888;">Area:</span>
+                <input type="range" id="sampleSlider" min="1" max="61" step="2" value="1">
+                <span id="sampleDisplay">1px</span>
+            </div>
+            
+            <label class="btn" for="fileInput">Upload</label>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        </div>
+    </div>
+
+    <div id="imageContainer">
+       <div id="emptyState">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" style="opacity:0.5; margin-bottom:10px;">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <p>
+                Upload a photo to start picking.<br>
+                <span style="font-size: 12px; opacity: 0.6;">The process is local and the image is not transmitted to any server.</span>
+            </p>
+        </div>
+        <img id="displayImg" src="">
+    </div>
+
+    <div id="resultBox">
+        <div id="closeResult">✕</div>
+        
+        <div class="swatches">
+            <div class="swatch-item">
+                <div id="pickedCircle" class="circle"></div>
+                <div id="pickedTitle" class="color-title">Your Pick</div>
+                <div id="pickedHex" class="color-hex">#000000</div>
+            </div>
+            
+            <div class="swatch-item">
+                <div id="matchCircle" class="circle"></div>
+                <div id="matchName" class="color-title">--</div>
+                <div id="matchHex" class="color-hex">#000000</div>
+            </div>
+        </div>
+
+        <p id="accuracy"></p>
+    </div>
+
+    <canvas id="procCanvas" style="display:none;"></canvas>
+
+    <script type="module">
+        import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
+
+        const toLab = converter('lab');
+        const calcDeltaE = differenceCiede2000();
+        let ALL_COLORS = [];
+
+        async function init() {
+            const resp = await fetch('colornames.csv');
+            const csv = await resp.text();
+            csv.split('\n').slice(1).forEach(line => {
+                const p = line.split(',');
+                if(p.length >= 2) ALL_COLORS.push({ name: p[0].trim(), hex: p[1].trim() });
+            });
+        }
+        init();
+
+        const fileInput = document.getElementById('fileInput');
+        const displayImg = document.getElementById('displayImg');
+        const canvas = document.getElementById('procCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        const sampleSlider = document.getElementById('sampleSlider');
+        const sampleDisplay = document.getElementById('sampleDisplay');
+        const imageContainer = document.getElementById('imageContainer');
+
+        // --- DYNAMIC CURSOR LOGIC ---
+        function updateCursor() {
+            const size = parseInt(sampleSlider.value);
+            sampleDisplay.innerText = size === 1 ? "1px" : `${size}px`;
+            
+            if (size === 1 || !displayImg.src) {
+                imageContainer.style.cursor = 'crosshair';
+                return;
+            }
+            
+            // Calculate physical screen size of the circle
+            const rect = displayImg.getBoundingClientRect();
+            if(rect.width === 0) return;
+            
+            const scale = rect.width / displayImg.naturalWidth;
+            let screenDiameter = size * scale;
+            
+            // Limit SVG size for browser safety
+            screenDiameter = Math.max(4, Math.min(screenDiameter, 128));
+            const r = screenDiameter / 2;
+            
+            // Create an SVG circle cursor
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${screenDiameter}" height="${screenDiameter}" viewBox="0 0 ${screenDiameter} ${screenDiameter}">
+                <circle cx="${r}" cy="${r}" r="${r - 1}" fill="none" stroke="white" stroke-width="1.5" />
+                <circle cx="${r}" cy="${r}" r="${r - 1}" fill="none" stroke="black" stroke-width="0.5" stroke-dasharray="2,2" />
+                <circle cx="${r}" cy="${r}" r="1" fill="white" />
+            </svg>`;
+            
+            const url = `data:image/svg+xml;base64,${btoa(svg)}`;
+            imageContainer.style.cursor = `url('${url}') ${r} ${r}, crosshair`;
+        }
+
+        sampleSlider.addEventListener('input', updateCursor);
+        window.addEventListener('resize', updateCursor);
+
+        // Close Box
+        document.getElementById('closeResult').onclick = () => {
+            document.getElementById('resultBox').style.display = 'none';
+        };
+
+        // Upload
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            gtag('event', 'upload_image', { 'event_category': 'picker_tool' });
+            reader.onload = (ev) => {
+                displayImg.src = ev.target.result;
+                displayImg.onload = () => {
+                    document.getElementById('emptyState').style.display = 'none';
+                    canvas.width = displayImg.naturalWidth;
+                    canvas.height = displayImg.naturalHeight;
+                    ctx.drawImage(displayImg, 0, 0);
+                    document.getElementById('resultBox').style.display = 'none';
+                    updateCursor();
+                };
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // --- TRUE CIRCULAR SAMPLING ---
+        displayImg.onclick = (e) => {
+            if(!displayImg.src) return;
+
+            const rect = displayImg.getBoundingClientRect();
+            const centerX = (e.clientX - rect.left) / rect.width * displayImg.naturalWidth;
+            const centerY = (e.clientY - rect.top) / rect.height * displayImg.naturalHeight;
+
+            const size = parseInt(sampleSlider.value);
+            const radius = Math.floor(size / 2);
+
+            const startX = Math.max(0, Math.round(centerX) - radius);
+            const startY = Math.max(0, Math.round(centerY) - radius);
+            const endX = Math.min(canvas.width, Math.round(centerX) + radius + 1);
+            const endY = Math.min(canvas.height, Math.round(centerY) + radius + 1);
+            
+            const w = endX - startX;
+            const h = endY - startY;
+
+            if(w <= 0 || h <= 0) return; // Clicked outside
+
+            const imgData = ctx.getImageData(startX, startY, w, h).data;
+            let r_sum = 0, g_sum = 0, b_sum = 0, pixelCount = 0;
+
+            for (let py = startY; py < endY; py++) {
+                for (let px = startX; px < endX; px++) {
+                    // Check if pixel is inside the circular radius
+                    const dx = px - Math.round(centerX);
+                    const dy = py - Math.round(centerY);
+                    
+                    if (dx * dx + dy * dy <= radius * radius || size === 1) {
+                        const index = ((py - startY) * w + (px - startX)) * 4;
+                        r_sum += imgData[index];
+                        g_sum += imgData[index+1];
+                        b_sum += imgData[index+2];
+                        pixelCount++;
+                    }
+                }
+            }
+
+            if(pixelCount === 0) return;
+            
+            const avgR = Math.round(r_sum / pixelCount);
+            const avgG = Math.round(g_sum / pixelCount);
+            const avgB = Math.round(b_sum / pixelCount);
+
+            const hex = "#" + (1 << 24 | avgR << 16 | avgG << 8 | avgB).toString(16).slice(1);
+            processColor(hex);
+        };
+
+        // --- SMART CONTRAST BACKGROUND ---
+        function isLightColor(hex) {
+            hex = hex.replace("#", "");
+            const r = parseInt(hex.substr(0,2), 16);
+            const g = parseInt(hex.substr(2,2), 16);
+            const b = parseInt(hex.substr(4,2), 16);
+            const yiq = ((r*299) + (g*587) + (b*114)) / 1000;
+            return yiq >= 128; 
+        }
+
+        function processColor(pickHex) {
+            const pickLab = toLab(parse(pickHex));
+            let nearest = null;
+            let minDiff = Infinity;
+
+            ALL_COLORS.forEach(c => {
+                const diff = calcDeltaE(pickLab, toLab(parse(c.hex)));
+                if(diff < minDiff) {
+                    minDiff = diff;
+                    nearest = c;
+                }
+            });
+
+            const acc = Math.max(0, 100 - minDiff).toFixed(1);
+            const box = document.getElementById('resultBox');
+            const accuracyTxt = document.getElementById('accuracy');
+            const hexTxt1 = document.getElementById('pickedHex');
+            const hexTxt2 = document.getElementById('matchHex');
+            const closeBtn = document.getElementById('closeResult');
+            
+            box.style.display = 'block';
+            
+            // Left (Picked)
+            document.getElementById('pickedCircle').style.backgroundColor = pickHex;
+            document.getElementById('pickedTitle').style.color = pickHex;
+            hexTxt1.innerText = pickHex.toUpperCase();
+            
+            // Right (Matched)
+            document.getElementById('matchCircle').style.backgroundColor = nearest.hex;
+            document.getElementById('matchName').innerText = nearest.name;
+            document.getElementById('matchName').style.color = nearest.hex;
+            hexTxt2.innerText = nearest.hex.toUpperCase();
+            
+            // Apply Smart Contrast Theme
+            if (!isLightColor(pickHex)) {
+                // Picked color is DARK -> Make background LIGHT so text is readable
+                box.style.background = 'rgba(240, 240, 240, 0.95)';
+                box.style.borderColor = '#ccc';
+                accuracyTxt.style.color = '#555';
+                accuracyTxt.style.borderTopColor = '#ccc';
+                hexTxt1.style.color = '#555';
+                hexTxt2.style.color = '#555';
+                closeBtn.style.color = '#555';
+            } else {
+                // Picked color is LIGHT -> Make background DARK so text is readable
+                box.style.background = 'rgba(26, 26, 27, 0.95)';
+                box.style.borderColor = 'var(--border)';
+                accuracyTxt.style.color = '#888';
+                accuracyTxt.style.borderTopColor = '#333';
+                hexTxt1.style.color = '#aaa';
+                hexTxt2.style.color = '#aaa';
+                closeBtn.style.color = '#888';
+            }
+
+            accuracyTxt.innerText = `Perceptual Match Accuracy: ${acc}%`;
+        }
+    </script>
+</body>
+</html>
