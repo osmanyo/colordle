@@ -480,11 +480,10 @@
 
             if (!guessHex) return;
 
-            if (gameState.guesses.some(g => g.hex.toLowerCase() === guessHex.toLowerCase())) {
-                alert("You already guessed that!");
-                return;
-            }
-
+            if (!gameState.startTime) {
+                    gameState.startTime = Date.now();
+                }               
+                
             const guessLab = toLab(parse(guessHex));
             let deltaE = calcDeltaE(targetLab, guessLab);
             if (isNaN(deltaE)) deltaE = 0;
@@ -503,9 +502,13 @@
             
             if (deltaE < 0.5) {
                 gameState.won = true;
-                submitWinToFirebase(); // Fire the win to the database!
+                const duration = Math.floor((Date.now() - gameState.startTime) / 1000);
+                submitWinToFirebase(duration); 
                 revealWin(true);
             }
+            else {
+            logAttemptToFirebase();
+        }
 
             saveGame();
             renderHistory();
@@ -520,12 +523,16 @@
         }
 
         function renderHistory() {
-    const container = document.getElementById('historyList');
-    container.innerHTML = '';
-    if (gameState.guesses.length === 0) return;
+            const myTries = gameState.guesses.length;
+            const threshold = globalAvgTries ? globalAvgTries * 0.8 : Infinity;
+            const canShowHints = globalWinners > 0 && myTries >= threshold;
+            const container = document.getElementById('historyList');
+            container.innerHTML = '';
+            if (gameState.guesses.length === 0) return;
 
-    let history = [...gameState.guesses];
-    let displayList = (sortOrder === 'latest') ? history.reverse() : [history.pop(), ...history.sort((a, b) => b.score - a.score)];
+            let history = [...gameState.guesses];
+            let displayList = (sortOrder === 'latest') ? history.reverse() : [history.pop(), ...history.sort((a, b) => b.score - a.score)];
+
 
     displayList.forEach(g => {
         const row = document.createElement('div');
@@ -537,20 +544,30 @@
 
         // --- CALCULATE HINTS ---
         const gLab = toLab(parse(g.hex));
-        let hints = [];
-        const threshold = 1.5; 
         const deltaE = calcDeltaE(targetLab, gLab);
-
-        if (targetLab.l > gLab.l + threshold) hints.push('Lighter ↑');
-        else if (targetLab.l < gLab.l - threshold) hints.push('Darker ↓');
-        if (targetLab.a > gLab.a + threshold) hints.push('Redder +a');
-        else if (targetLab.a < gLab.a - threshold) hints.push('Greener -a');
-        if (targetLab.b > gLab.b + threshold) hints.push('Yellower +b');
-        else if (targetLab.b < gLab.b - threshold) hints.push('Bluer -b');
+        let hints = [];
+        
+        const hintDeltaeThreshold = 1.5
+        if (targetLab.l > gLab.l + hintDeltaeThreshold) hints.push('Lighter ↑');
+        else if (targetLab.l < gLab.l - hintDeltaeThreshold) hints.push('Darker ↓');
+        if (targetLab.a > gLab.a + hintDeltaeThreshold) hints.push('Redder +a');
+        else if (targetLab.a < gLab.a - hintDeltaeThreshold) hints.push('Greener -a');
+        if (targetLab.b > gLab.b + hintDeltaeThreshold) hints.push('Yellower +b');
+        else if (targetLab.b < gLab.b - hintDeltaeThreshold) hints.push('Bluer -b');
 
         // Only say Target Reached if it is actually the winning threshold
         const hintString = (deltaE < 0.5) ? '✨ Target Reached!' : hints.join(' • ');
         const hintId = `hint-text-${g.number}`;
+
+        // 2. ONLY SHOW BUTTON IF UNLOCKED OR IF USER WON THIS GUESS
+        let hintButtonHTML = '';
+        if (canShowHints || deltaE < 0.5) {
+            hintButtonHTML = `
+                <button onclick="document.getElementById('${hintId}').style.display='block'; this.style.display='none';" 
+                        style="background:rgba(255,255,255,0.15); border:1px solid currentColor; color:inherit; border-radius:4px; width:24px; height:24px; cursor:pointer; margin-right:5px; font-size:12px; display:flex; align-items:center; justify-content:center;">
+                    ?
+                </button>`;
+        }
 
         row.innerHTML = `
             <span class="guess-num">#${g.number}</span>
@@ -559,26 +576,20 @@
                     <span class="guess-name" style="flex-grow:1; text-align:left;">${g.name}</span>
                     <span class="guess-score" style="margin-right:10px;">${g.score}%</span>
                     
-                    <!-- Hint Toggle Button -->
-                    <button onclick="document.getElementById('${hintId}').style.display='block'; this.style.display='none';" 
-                            style="background:rgba(255,255,255,0.15); border:1px solid currentColor; color:inherit; border-radius:4px; width:24px; height:24px; cursor:pointer; margin-right:5px; font-size:12px; display:flex; align-items:center; justify-content:center;">
-                        ?
-                    </button>
+                    ${hintButtonHTML}
 
-                    <!-- Teleport Icon -->
                     <a href="explore.html?goto=${encodeURIComponent(g.hex)}" 
                        style="background:rgba(255,255,255,0.2); border-radius:4px; padding:4px; display:flex; align-items:center; color:inherit; text-decoration:none;">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
                     </a>
                 </div>
-                <!-- HIDDEN HINT -->
-                <div id="${hintId}" style="display:none; font-size: 10px; opacity: 0.9; margin-top: 4px; font-weight: bold; text-align:left;">
+                <div id="${hintId}" style="display:none; font-size: 11px; opacity: 0.9; margin-top: 6px; font-weight: bold; text-align:left; letter-spacing: 0.5px;">
                     ${hintString}
                 </div>
             </div>
         `;
         container.appendChild(row);
-    });
+    });     
 }
 
         function revealWin(animate = true) {
@@ -592,6 +603,9 @@
             if(animate) window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        
+        let globalAvgTries = null;
+        let globalWinners = 0;
         // --- FIREBASE STATS FUNCTIONS ---
        function syncStats() {
         
@@ -603,15 +617,18 @@
             unsubscribeStats = onSnapshot(doc(db, "dailyStats", currentSeed.toString()), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
-                    document.getElementById('statWinners').innerText = data.winnerCount || 0;
-                    const avg = data.winnerCount > 0 ? (data.totalTries / data.winnerCount).toFixed(1) : "0";
-                    document.getElementById('statAvg').innerText = avg;
-                    
+                    globalWinners = data.winnerCount || 0;
+                    globalAvgTries = globalWinners > 0 ? (data.totalTries / globalWinners) : null;
+
+                    document.getElementById('statWinners').innerText = globalWinners;
+                    document.getElementById('statAvg').innerText = globalAvgTries ? globalAvgTries.toFixed(1) : "0";
+                                
                     if (gameState.rank) {
                         document.getElementById('statRank').innerText = `#${gameState.rank}`;
                     } else {
                         document.getElementById('statRank').innerText = `--`;
                     }
+                    renderHistory(); 
                 } else {
                     
                     document.getElementById('statWinners').innerText = "0";
@@ -621,7 +638,28 @@
             });
         }
 
-        async function submitWinToFirebase() {
+        async function logAttemptToFirebase() {
+        const statsRef = doc(db, "dailyStats", currentSeed.toString());
+        try {
+            const snap = await getDoc(statsRef);
+
+            if (!snap.exists()) {
+                await setDoc(statsRef, {
+                    winnerCount: 0,
+                    totalTries: 0,
+                    totalSeconds: 0,
+                    totalIncorrectGuesses: 1 
+                });
+            } else {
+                await updateDoc(statsRef, {
+                    totalIncorrectGuesses: increment(1)
+                });
+            }
+        } catch(e) {
+            console.error("Error logging attempt:", e);
+        }
+    }
+        async function submitWinToFirebase(seconds) {
             if (gameState.submitted) return; 
 
             const statsRef = doc(db, "dailyStats", currentSeed.toString());
@@ -632,24 +670,31 @@
                 let myRank = 1;
 
                 if (!snap.exists()) {
-                    await setDoc(statsRef, { winnerCount: 1, totalTries: tries });
+                    // First winner creates the record
+                    await setDoc(statsRef, { 
+                        winnerCount: 1, 
+                        totalTries: tries, 
+                        totalSeconds: seconds,
+                        totalIncorrectGuesses: 0 
+                    });
                 } else {
-                    myRank = snap.data().winnerCount + 1;
+                    // Future winners update counters and calculate rank
+                    myRank = (snap.data().winnerCount || 0) + 1;
                     await updateDoc(statsRef, {
                         winnerCount: increment(1),
-                        totalTries: increment(tries)
+                        totalTries: increment(tries),
+                        totalSeconds: increment(seconds)
                     });
                 }
 
                 gameState.submitted = true;
-                gameState.rank = myRank;
+                gameState.rank = myRank; 
                 document.getElementById('statRank').innerText = `#${myRank}`;
                 saveGame();
             } catch (err) {
                 console.error("Firebase submit error:", err);
             }
-        }
-
+        }   
         // --- EVENTS ---
         const inputEl = document.getElementById('guessInput');
         const previewEl = document.getElementById('inputPreview');
