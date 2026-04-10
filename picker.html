@@ -8,11 +8,8 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-H57NFG20DE');
     </script>
-    <!-- End Google tag -->
-
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Colordle - Image Color Picker</title>
@@ -23,75 +20,102 @@
             margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
-        /* --- COMPACT TOP TOOLBAR --- */
+        /* --- TOOLBAR --- */
         #toolbar {
             display: flex; align-items: center; justify-content: space-between;
             padding: 10px 20px; background: rgba(20, 20, 20, 0.95);
             border-bottom: 1px solid var(--border); z-index: 10;
         }
-        
-        .toolbar-group { display: flex; align-items: center; gap: 10px; }
+        .toolbar-group { display: flex; align-items: center; gap: 8px; }
 
         .btn {
             background: var(--accent); color: #000; padding: 6px 12px; 
-            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;
+            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;
             border: none; text-decoration: none; display: inline-flex; align-items: center;
         }
         .btn-outline { background: transparent; color: var(--text); border: 1px solid #555; }
-        .btn-outline:hover { background: #333; }
         
-        .slider-container { display: flex; align-items: center; gap: 8px; background: #000; padding: 4px 10px; border-radius: 6px; border: 1px solid #555;}
-        input[type="range"] { width: 70px; cursor: pointer; }
-        #sampleDisplay { font-size: 12px; color: #aaa; width: 35px; text-align: right; font-family: monospace;}
+        .control-panel { display: flex; align-items: center; gap: 6px; background: #000; padding: 4px 10px; border-radius: 6px; border: 1px solid #444;}
+        select { background: transparent; color: white; border: none; font-size: 12px; cursor: pointer; outline: none; }
+        input[type="range"] { width: 60px; cursor: pointer; }
+        #sampleDisplay { font-size: 11px; color: #aaa; width: 30px; text-align: right; font-family: monospace;}
 
-        /* --- MAXIMIZED IMAGE CONTAINER --- */
+        /* --- IMAGE AREA --- */
         #imageContainer { 
             flex-grow: 1; display: flex; justify-content: center; align-items: center;
-            background: #000; position: relative; overflow: hidden; cursor: crosshair;
+            background: #000; position: relative; overflow: hidden;
         }
-        img { 
-            max-width: 100%; max-height: 100%; 
-            object-fit: contain; pointer-events: auto;
-        }
+        img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        #emptyState {
-            position: absolute; color: #666; pointer-events: none; text-align: center;
-        }
+        #emptyState { position: absolute; color: #666; text-align: center; pointer-events: none; }
 
         /* --- FLOATING RESULT BOX --- */
         #resultBox { 
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
             background: rgba(26, 26, 27, 0.95); border: 1px solid var(--border); 
             border-radius: 12px; display: none; text-align: center; width: 340px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(8px);
-            padding: 20px; z-index: 100;
-            transition: background 0.3s, border-color 0.3s; /* Smooth theme transitions */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            padding: 20px; z-index: 100; transition: background 0.3s;
         }
         
-        .swatches { display: flex; justify-content: space-around; margin-bottom: 15px; align-items: flex-start; }
+        .swatches { display: flex; justify-content: space-around; margin-bottom: 15px; }
         .swatch-item { display: flex; flex-direction: column; align-items: center; width: 50%; }
+        .circle { width: 65px; height: 65px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); margin-bottom: 10px; }
         
-        .circle { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #444; margin-bottom: 10px; }
+        .color-title { font-size: 13px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        .color-hex { font-family: monospace; font-size: 13px; opacity: 0.7; }
         
-        .color-title { font-size: 13px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.3s; }
-        .color-hex { font-family: monospace; font-size: 13px; color: #aaa; transition: color 0.3s;}
-        
-        #closeResult { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #888; font-weight: bold; padding: 5px; transition: color 0.3s; }
-        #closeResult:hover { color: white; }
-        
-        #accuracy { font-size: 13px; color: #888; margin: 0; padding-top: 10px; border-top: 1px solid #333; transition: color 0.3s, border-color 0.3s; }
+        #closeResult { position: absolute; top: 10px; right: 15px; cursor: pointer; opacity: 0.5; font-size: 18px; }
+        #accuracy { font-size: 12px; opacity: 0.6; margin: 0; padding-top: 10px; border-top: 1px solid rgba(128,128,128,0.2); }
     </style>
 </head>
 <body>
 
     <div id="toolbar">
         <div class="toolbar-group">
-            <a href="index.html" class="btn btn-outline" title="Back to Game">← Back</a>
+            <a href="index.html" class="btn btn-outline">← Back</a>
         </div>
         
         <div class="toolbar-group">
-            <div class="slider-container" title="Adjust sample circle size">
-                <span style="font-size: 12px; color: #888;">Area:</span>
+            <!-- DICTIONARY SELECTOR (Using Pizza API Keys) -->
+            <div class="control-panel">
+                <span style="font-size: 11px; color: #666;">List:</span>
+                <select id="dictionarySelect">
+                    <optgroup label="General">
+                        <option value="default">Full List (30k)</option>
+                        <option value="bestOf">Best of (Curated)</option>
+                        <option value="wikipedia">Wikipedia</option>
+                        <option value="xkcd">XKCD Survey</option>
+                    </optgroup>
+                    <optgroup label="Standards">
+                        <option value="html">HTML / CSS</option>
+                        <option value="basic">Basic (16)</option>
+                        <option value="ntc">Name That Color (Classic)</option>
+                        <option value="x11">X11</option>
+                        <option value="windows">MS Windows</option>
+                    </optgroup>
+                    <optgroup label="Cultural/Traditional">
+                        <option value="japaneseTraditional">Japanese Traditional</option>
+                        <option value="chineseTraditional">Chinese Traditional</option>
+                        <option value="french">French Colors</option>
+                        <option value="spanish">Spanish Colors</option>
+                        <option value="german">German Colors</option>
+                    </optgroup>
+                    <optgroup label="Art & History">
+                        <option value="crayola">Crayola Crayons</option>
+                        <option value="osxcrayons">Apple Crayons</option>
+                        <option value="ral">RAL (Industrial)</option>
+                        <option value="sanzoWadaI">Sanzo Wada (Art)</option>
+                        <option value="werner">Werner’s (Darwin-era)</option>
+                        <option value="ridgway">Ridgway’s (Birds)</option>
+                        <option value="leCorbusier">Le Corbusier</option>
+                    </optgroup>
+                </select>
+                <span id="colorCount" style="font-size: 11px; color: #666; margin-left: 5px; padding-left: 7px; border-left: 1px solid #333; min-width: 30px;">0</span>
+            </div>
+
+            <div class="control-panel">
+                <span style="font-size: 11px; color: #666;">Area:</span>
                 <input type="range" id="sampleSlider" min="1" max="61" step="2" value="1">
                 <span id="sampleDisplay">1px</span>
             </div>
@@ -103,38 +127,29 @@
 
     <div id="imageContainer">
         <div id="emptyState">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" style="opacity:0.5; margin-bottom:10px;">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-                <p>Upload a photo to start picking.</p>
-            </div>
-            <img id="displayImg" src="beignets-task-guide.png">
+            <p>Upload a photo to start picking</p>
         </div>
+        <img id="displayImg" src="beignets-task-guide.png">
+    </div>
 
-        <!-- NEW PRIVACY FOOTER -->
-        <div style="position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 11px; color: #555; pointer-events: none; z-index: 5;">
-            Colors are processed locally. Images are never sent to any server.
+    <div style="position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 10px; color: #444; pointer-events: none;">
+        Images are processed locally and never sent to a server.
     </div>
 
     <div id="resultBox">
         <div id="closeResult">✕</div>
-        
         <div class="swatches">
             <div class="swatch-item">
                 <div id="pickedCircle" class="circle"></div>
                 <div id="pickedTitle" class="color-title">Your Pick</div>
                 <div id="pickedHex" class="color-hex">#000000</div>
             </div>
-            
             <div class="swatch-item">
                 <div id="matchCircle" class="circle"></div>
                 <div id="matchName" class="color-title">--</div>
                 <div id="matchHex" class="color-hex">#000000</div>
             </div>
         </div>
-
         <p id="accuracy"></p>
     </div>
 
@@ -146,125 +161,86 @@
         const toLab = converter('lab');
         const calcDeltaE = differenceCiede2000();
         let ALL_COLORS = [];
+        let lastPickedHex = null;
 
-        async function init() {
-            const resp = await fetch('colornames.csv');
-            const csv = await resp.text();
-            csv.split('\n').slice(1).forEach(line => {
-                const p = line.split(',');
-                if(p.length >= 2) ALL_COLORS.push({ name: p[0].trim(), hex: p[1].trim() });
-            });
-        }
-        init();
-
-        const fileInput = document.getElementById('fileInput');
         const displayImg = document.getElementById('displayImg');
         const canvas = document.getElementById('procCanvas');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        
         const sampleSlider = document.getElementById('sampleSlider');
-        const sampleDisplay = document.getElementById('sampleDisplay');
         const imageContainer = document.getElementById('imageContainer');
 
-        // --- DYNAMIC CURSOR LOGIC ---
-        function updateCursor() {
-            const size = parseInt(sampleSlider.value);
-            sampleDisplay.innerText = size === 1 ? "1px" : `${size}px`;
-            
-            if (size === 1 || !displayImg.src) {
-                imageContainer.style.cursor = 'crosshair';
-                return;
-            }
-            
-            // Calculate physical screen size of the circle
-            const rect = displayImg.getBoundingClientRect();
-            if(rect.width === 0) return;
-            
-            const scale = rect.width / displayImg.naturalWidth;
-            let screenDiameter = size * scale;
-            
-            // Limit SVG size for browser safety
-            screenDiameter = Math.max(4, Math.min(screenDiameter, 128));
-            const r = screenDiameter / 2;
-            
-            // Create an SVG circle cursor
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${screenDiameter}" height="${screenDiameter}" viewBox="0 0 ${screenDiameter} ${screenDiameter}">
-                <circle cx="${r}" cy="${r}" r="${r - 1}" fill="none" stroke="white" stroke-width="1.5" />
-                <circle cx="${r}" cy="${r}" r="${r - 1}" fill="none" stroke="black" stroke-width="0.5" stroke-dasharray="2,2" />
-                <circle cx="${r}" cy="${r}" r="1" fill="white" />
-            </svg>`;
-            
-            const url = `data:image/svg+xml;base64,${btoa(svg)}`;
-            imageContainer.style.cursor = `url('${url}') ${r} ${r}, crosshair`;
-        }
+        // --- LOAD DICTIONARY (Color Pizza API) ---
+        async function loadDictionary(listName) {
+                    try {
+                        // Show a tiny indicator in the console or UI if you like
+                        const resp = await fetch(`https://api.color.pizza/v1/?list=${listName}`);
+                        const d = await resp.json();
+                        
+                        // Map the API results to our local ALL_COLORS array
+                        ALL_COLORS = d.colors.map(c => ({ 
+                            name: c.name, 
+                            hex: c.hex 
+                        }));
 
-        sampleSlider.addEventListener('input', updateCursor);
-        window.addEventListener('resize', updateCursor);
+                        document.getElementById('colorCount').innerText = ALL_COLORS.length.toLocaleString();
 
-        // Close Box
-        document.getElementById('closeResult').onclick = () => {
-            document.getElementById('resultBox').style.display = 'none';
-        };
+                        // If a user has already picked a color, update the results immediately!
+                        if (lastPickedHex) processColor(lastPickedHex);
+                        
+                    } catch (err) { 
+                        console.error("API Error:", err); 
+                    }
+                }
 
-        // --- PREPARE IMAGE FOR PIXEL PICKING ---
-        // --- 1. THE SHARED SETUP FUNCTION ---
-        function setupCanvasForImage() {
-            if (!displayImg.naturalWidth) return; // Safety check
+        document.getElementById('dictionarySelect').onchange = (e) => loadDictionary(e.target.value);
+        loadDictionary('default');
+
+        // --- CANVAS SETUP ---
+        function setupCanvas() {
+            if (!displayImg.naturalWidth) return;
             document.getElementById('emptyState').style.display = 'none';
-            
-            // Sync the invisible canvas to the NEW image's dimensions
             canvas.width = displayImg.naturalWidth;
             canvas.height = displayImg.naturalHeight;
-            
-            // Draw the new image onto the math layer
             ctx.drawImage(displayImg, 0, 0);
-            
-            // Refresh the circular cursor size
             updateCursor();
-            console.log("Canvas updated for new image:", canvas.width, "x", canvas.height);
         }
 
-        // --- 2. INITIAL LOAD (For default image) ---
-        if (displayImg.complete) {
-            setupCanvasForImage();
-        } else {
-            displayImg.onload = setupCanvasForImage;
-        }
+        if (displayImg.complete) setupCanvas();
+        else displayImg.onload = setupCanvas;
 
-        // --- 3. HANDLE NEW UPLOADS ---
-        fileInput.onchange = (e) => {
+        document.getElementById('fileInput').onchange = (e) => {
             const file = e.target.files[0];
             if(!file) return;
-            
-            // Optional Analytics
-            if (typeof gtag === 'function') {
-                gtag('event', 'upload_image', { 'event_category': 'picker_tool' });
-            }
-
             const reader = new FileReader();
             reader.onload = (ev) => {
-                // We must define what happens AFTER the image data is ready
-                displayImg.onload = () => {
-                    setupCanvasForImage();
-                    // Clean up the listener so it doesn't interfere later
-                    displayImg.onload = null; 
-                };
-                
-                // Trigger the load
+                displayImg.onload = () => { setupCanvas(); displayImg.onload = null; };
                 displayImg.src = ev.target.result;
                 document.getElementById('resultBox').style.display = 'none';
             };
             reader.readAsDataURL(file);
         };
 
-        // --- TRUE CIRCULAR SAMPLING ---
+        // --- DYNAMIC CURSOR ---
+        function updateCursor() {
+            const size = parseInt(sampleSlider.value);
+            document.getElementById('sampleDisplay').innerText = size === 1 ? "1px" : `${size}px`;
+            if (!displayImg.src || size === 1) { imageContainer.style.cursor = 'crosshair'; return; }
+            
+            const rect = displayImg.getBoundingClientRect();
+            const screenDiameter = Math.max(4, Math.min((size * (rect.width / displayImg.naturalWidth)), 128));
+            const r = screenDiameter / 2;
+            
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${screenDiameter}" height="${screenDiameter}" viewBox="0 0 ${screenDiameter} ${screenDiameter}"><circle cx="${r}" cy="${r}" r="${r - 1}" fill="none" stroke="white" stroke-width="2" /><circle cx="${r}" cy="${r}" r="${r - 1}" fill="none" stroke="black" stroke-width="0.5" stroke-dasharray="2,2" /></svg>`;
+            imageContainer.style.cursor = `url('data:image/svg+xml;base64,${btoa(svg)}') ${r} ${r}, crosshair`;
+        }
+        sampleSlider.oninput = updateCursor;
+
+        // --- CIRCULAR SAMPLING ---
         displayImg.onclick = (e) => {
             if(!displayImg.src) return;
-
             const rect = displayImg.getBoundingClientRect();
             const centerX = (e.clientX - rect.left) / rect.width * displayImg.naturalWidth;
             const centerY = (e.clientY - rect.top) / rect.height * displayImg.naturalHeight;
-
             const size = parseInt(sampleSlider.value);
             const radius = Math.floor(size / 2);
 
@@ -273,106 +249,55 @@
             const endX = Math.min(canvas.width, Math.round(centerX) + radius + 1);
             const endY = Math.min(canvas.height, Math.round(centerY) + radius + 1);
             
-            const w = endX - startX;
-            const h = endY - startY;
-
-            if(w <= 0 || h <= 0) return; // Clicked outside
-
-            const imgData = ctx.getImageData(startX, startY, w, h).data;
-            let r_sum = 0, g_sum = 0, b_sum = 0, pixelCount = 0;
+            const imgData = ctx.getImageData(startX, startY, endX - startX, endY - startY).data;
+            let r=0, g=0, b=0, count=0;
 
             for (let py = startY; py < endY; py++) {
                 for (let px = startX; px < endX; px++) {
-                    // Check if pixel is inside the circular radius
-                    const dx = px - Math.round(centerX);
-                    const dy = py - Math.round(centerY);
-                    
-                    if (dx * dx + dy * dy <= radius * radius || size === 1) {
-                        const index = ((py - startY) * w + (px - startX)) * 4;
-                        r_sum += imgData[index];
-                        g_sum += imgData[index+1];
-                        b_sum += imgData[index+2];
-                        pixelCount++;
+                    const dx = px - Math.round(centerX), dy = py - Math.round(centerY);
+                    if (dx*dx + dy*dy <= radius*radius || size === 1) {
+                        const i = ((py - startY) * (endX - startX) + (px - startX)) * 4;
+                        r += imgData[i]; g += imgData[i+1]; b += imgData[i+2]; count++;
                     }
                 }
             }
-
-            if(pixelCount === 0) return;
-            
-            const avgR = Math.round(r_sum / pixelCount);
-            const avgG = Math.round(g_sum / pixelCount);
-            const avgB = Math.round(b_sum / pixelCount);
-
-            const hex = "#" + (1 << 24 | avgR << 16 | avgG << 8 | avgB).toString(16).slice(1);
+            const hex = "#" + (1 << 24 | Math.round(r/count) << 16 | Math.round(g/count) << 8 | Math.round(b/count)).toString(16).slice(1);
+            lastPickedHex = hex;
             processColor(hex);
         };
 
-        // --- SMART CONTRAST BACKGROUND ---
-        function isLightColor(hex) {
-            hex = hex.replace("#", "");
-            const r = parseInt(hex.substr(0,2), 16);
-            const g = parseInt(hex.substr(2,2), 16);
-            const b = parseInt(hex.substr(4,2), 16);
-            const yiq = ((r*299) + (g*587) + (b*114)) / 1000;
-            return yiq >= 128; 
-        }
-
+        // --- SMART CONTRAST UI ---
         function processColor(pickHex) {
             const pickLab = toLab(parse(pickHex));
-            let nearest = null;
-            let minDiff = Infinity;
-
+            let nearest = null, minDiff = Infinity;
             ALL_COLORS.forEach(c => {
                 const diff = calcDeltaE(pickLab, toLab(parse(c.hex)));
-                if(diff < minDiff) {
-                    minDiff = diff;
-                    nearest = c;
-                }
+                if(diff < minDiff) { minDiff = diff; nearest = c; }
             });
 
-            const acc = Math.max(0, 100 - minDiff).toFixed(1);
             const box = document.getElementById('resultBox');
-            const accuracyTxt = document.getElementById('accuracy');
-            const hexTxt1 = document.getElementById('pickedHex');
-            const hexTxt2 = document.getElementById('matchHex');
-            const closeBtn = document.getElementById('closeResult');
-            
             box.style.display = 'block';
-            
-            // Left (Picked)
             document.getElementById('pickedCircle').style.backgroundColor = pickHex;
             document.getElementById('pickedTitle').style.color = pickHex;
-            hexTxt1.innerText = pickHex.toUpperCase();
-            
-            // Right (Matched)
+            document.getElementById('pickedHex').innerText = pickHex.toUpperCase();
             document.getElementById('matchCircle').style.backgroundColor = nearest.hex;
             document.getElementById('matchName').innerText = nearest.name;
             document.getElementById('matchName').style.color = nearest.hex;
-            hexTxt2.innerText = nearest.hex.toUpperCase();
-            
-            // Apply Smart Contrast Theme
-            if (!isLightColor(pickHex)) {
-                // Picked color is DARK -> Make background LIGHT so text is readable
-                box.style.background = 'rgba(240, 240, 240, 0.95)';
-                box.style.borderColor = '#ccc';
-                accuracyTxt.style.color = '#555';
-                accuracyTxt.style.borderTopColor = '#ccc';
-                hexTxt1.style.color = '#555';
-                hexTxt2.style.color = '#555';
-                closeBtn.style.color = '#555';
-            } else {
-                // Picked color is LIGHT -> Make background DARK so text is readable
-                box.style.background = 'rgba(26, 26, 27, 0.95)';
-                box.style.borderColor = 'var(--border)';
-                accuracyTxt.style.color = '#888';
-                accuracyTxt.style.borderTopColor = '#333';
-                hexTxt1.style.color = '#aaa';
-                hexTxt2.style.color = '#aaa';
-                closeBtn.style.color = '#888';
-            }
+            document.getElementById('matchHex').innerText = nearest.hex.toUpperCase();
+            document.getElementById('accuracy').innerText = `Visual Match: ${Math.max(0, 100 - minDiff).toFixed(1)}%`;
 
-            accuracyTxt.innerText = `Perceptual Match Accuracy: ${acc}%`;
+            // Contrast Logic (YIQ)
+            const rgb = parse(pickHex);
+            const yiq = ((rgb.r*255*299) + (rgb.g*255*587) + (rgb.b*255*114)) / 1000;
+            if (yiq < 128) {
+                box.style.background = 'rgba(245, 245, 245, 0.95)';
+                box.style.color = '#111';
+            } else {
+                box.style.background = 'rgba(26, 26, 27, 0.95)';
+                box.style.color = '#fff';
+            }
         }
+        document.getElementById('closeResult').onclick = () => document.getElementById('resultBox').style.display='none';
     </script>
 </body>
 </html>
