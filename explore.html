@@ -634,8 +634,34 @@ compassGroup.add(core);
                 pointsMesh = new THREE.Points(geometry, material);
                 scene.add(pointsMesh);
                 
-                camera.position.set(0, 0, 250);
+                // camera.position.set(0, 0, 250);
                 document.getElementById('loading').style.display = 'none';
+                // --- TELEPORT LOGIC (CLEAN VERSION) ---
+                const urlParams = new URLSearchParams(window.location.search);
+                const goToHex = urlParams.get('goto');
+
+                if (goToHex) {
+                    const match = colorData.find(c => c.hex.toLowerCase() === goToHex.toLowerCase());
+                    if (match) {
+                        // 1. Position camera
+                        camera.position.set(match.x, match.y, match.z + 45);
+                        
+                        // 2. Point camera at the dot
+                        camera.lookAt(match.x, match.y, match.z);
+                        
+                        // 3. IMPORTANT: Update rotation order and reset the control angles
+                        // This prevents the "snap" or "jerk" when you first click
+                        camera.rotation.order = 'YXZ'; 
+
+                        // 4. Clean UI
+                        document.getElementById('instructions').style.display = 'none';
+                        document.getElementById('hud').style.display = 'block';
+                        document.getElementById('colorName').innerText = "Click to Explore";
+                        document.getElementById('colorHex').innerText = "Target Set";
+                    }
+                } else {
+                    camera.position.set(0, 0, 250);
+                }
             } catch (err) {
                 document.getElementById('loading').innerText = "Error loading CSV (Use Local Server!)";
             }

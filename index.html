@@ -258,9 +258,9 @@
     <!-- SETTINGS MODAL -->
     <div id="settingsModal">
         <div class="setting-row">
-            <label class="setting-label">Max Suggestions: <span id="maxCountDisplay">0</span></label>
-            <input type="range" id="maxSuggestionsInput" min="0" max="50" value="0">
-        </div>
+        <label class="setting-label">Max Suggestions: <span id="maxCountDisplay"></span></label>
+        <input type="range" id="maxSuggestionsInput" min="0" max="50">
+    </div>
         <div class="setting-row">
             <label class="setting-label">Sort History By:</label>
             <select id="sortOrderInput">
@@ -353,7 +353,13 @@
         let unsubscribeStats = null;
 
         // Preferences
-        let maxSuggestions = 0;
+        let maxSuggestions = 1;
+        const maxInput = document.getElementById('maxSuggestionsInput');
+        const maxDisplay = document.getElementById('maxCountDisplay');
+
+        maxInput.value = maxSuggestions;
+        maxDisplay.innerText = maxSuggestions;
+
         let sortOrder = 'best'; 
 
         let gameState = { seed: null, won: false, guesses: [], submitted: false, rank: null };
@@ -514,41 +520,66 @@
         }
 
         function renderHistory() {
-            const container = document.getElementById('historyList');
-            container.innerHTML = '';
+    const container = document.getElementById('historyList');
+    container.innerHTML = '';
+    if (gameState.guesses.length === 0) return;
 
-            if (gameState.guesses.length === 0) return;
+    let history = [...gameState.guesses];
+    let displayList = (sortOrder === 'latest') ? history.reverse() : [history.pop(), ...history.sort((a, b) => b.score - a.score)];
 
-            let history = [...gameState.guesses];
-            let displayList = [];
+    displayList.forEach(g => {
+        const row = document.createElement('div');
+        const textColor = getContrastYIQ(g.hex);
+        row.className = 'guess-row';
+        row.style.backgroundColor = g.hex;
+        row.style.color = textColor;
+        row.style.borderColor = textColor === '#ffffff' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)';
 
-            if (sortOrder === 'latest') {
-                displayList = history.reverse();
-            } else {
-                const latestGuess = history.pop();
-                history.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
-                displayList = [latestGuess, ...history];
-            }
+        // --- CALCULATE HINTS ---
+        const gLab = toLab(parse(g.hex));
+        let hints = [];
+        const threshold = 1.5; 
+        const deltaE = calcDeltaE(targetLab, gLab);
 
-            displayList.forEach(g => {
-                const row = document.createElement('div');
-                const textColor = getContrastYIQ(g.hex);
+        if (targetLab.l > gLab.l + threshold) hints.push('Lighter ↑');
+        else if (targetLab.l < gLab.l - threshold) hints.push('Darker ↓');
+        if (targetLab.a > gLab.a + threshold) hints.push('Redder +a');
+        else if (targetLab.a < gLab.a - threshold) hints.push('Greener -a');
+        if (targetLab.b > gLab.b + threshold) hints.push('Yellower +b');
+        else if (targetLab.b < gLab.b - threshold) hints.push('Bluer -b');
 
-                row.className = 'guess-row';
-                row.style.backgroundColor = g.hex;
-                row.style.color = textColor;
-                row.style.borderColor = textColor === '#ffffff' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)';
+        // Only say Target Reached if it is actually the winning threshold
+        const hintString = (deltaE < 0.5) ? '✨ Target Reached!' : hints.join(' • ');
+        const hintId = `hint-text-${g.number}`;
 
-                row.innerHTML = `
-                    <span class="guess-num">#${g.number}</span>
-                    <div class="guess-details">
-                        <span class="guess-name">${g.name}</span>
-                        <span class="guess-score">${g.score}%</span>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-        }
+        row.innerHTML = `
+            <span class="guess-num">#${g.number}</span>
+            <div class="guess-details" style="display:flex; flex-direction:column; width:100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <span class="guess-name" style="flex-grow:1; text-align:left;">${g.name}</span>
+                    <span class="guess-score" style="margin-right:10px;">${g.score}%</span>
+                    
+                    <!-- Hint Toggle Button -->
+                    <button onclick="document.getElementById('${hintId}').style.display='block'; this.style.display='none';" 
+                            style="background:rgba(255,255,255,0.15); border:1px solid currentColor; color:inherit; border-radius:4px; width:24px; height:24px; cursor:pointer; margin-right:5px; font-size:12px; display:flex; align-items:center; justify-content:center;">
+                        ?
+                    </button>
+
+                    <!-- Teleport Icon -->
+                    <a href="explore.html?goto=${encodeURIComponent(g.hex)}" 
+                       style="background:rgba(255,255,255,0.2); border-radius:4px; padding:4px; display:flex; align-items:center; color:inherit; text-decoration:none;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                    </a>
+                </div>
+                <!-- HIDDEN HINT -->
+                <div id="${hintId}" style="display:none; font-size: 10px; opacity: 0.9; margin-top: 4px; font-weight: bold; text-align:left;">
+                    ${hintString}
+                </div>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+}
 
         function revealWin(animate = true) {
             const display = document.getElementById('targetDisplay');
@@ -642,10 +673,9 @@
 
         document.getElementById('resetGameBtn').addEventListener('click', resetCurrentGame);
 
-        const maxInput = document.getElementById('maxSuggestionsInput');
         maxInput.addEventListener('input', (e) => {
             maxSuggestions = parseInt(e.target.value);
-            document.getElementById('maxCountDisplay').innerText = maxSuggestions;
+            maxDisplay.innerText = maxSuggestions;
         });
 
         const sortInput = document.getElementById('sortOrderInput');
