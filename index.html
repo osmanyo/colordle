@@ -525,7 +525,7 @@
         function renderHistory() {
             const myTries = gameState.guesses.length;
             const threshold = globalAvgTries ? globalAvgTries * 0.8 : Infinity;
-            const canShowHints = globalWinners > 0 && myTries >= threshold;
+            const canShowHints = (globalWinners > 0 && currentTries >= threshold) || currentTries > 100;
             const container = document.getElementById('historyList');
             container.innerHTML = '';
             if (gameState.guesses.length === 0) return;
