@@ -207,33 +207,50 @@
         };
 
         // --- PREPARE IMAGE FOR PIXEL PICKING ---
+        // --- 1. THE SHARED SETUP FUNCTION ---
         function setupCanvasForImage() {
+            if (!displayImg.naturalWidth) return; // Safety check
             document.getElementById('emptyState').style.display = 'none';
+            
+            // Sync the invisible canvas to the NEW image's dimensions
             canvas.width = displayImg.naturalWidth;
             canvas.height = displayImg.naturalHeight;
+            
+            // Draw the new image onto the math layer
             ctx.drawImage(displayImg, 0, 0);
+            
+            // Refresh the circular cursor size
             updateCursor();
+            console.log("Canvas updated for new image:", canvas.width, "x", canvas.height);
         }
 
-        // 1. Fix for the default image on page load
-        if (displayImg.complete && displayImg.naturalWidth > 0) {
+        // --- 2. INITIAL LOAD (For default image) ---
+        if (displayImg.complete) {
             setupCanvasForImage();
         } else {
-            displayImg.addEventListener('load', setupCanvasForImage);
+            displayImg.onload = setupCanvasForImage;
         }
 
-        // 2. Handle New Uploads
+        // --- 3. HANDLE NEW UPLOADS ---
         fileInput.onchange = (e) => {
             const file = e.target.files[0];
             if(!file) return;
             
+            // Optional Analytics
             if (typeof gtag === 'function') {
                 gtag('event', 'upload_image', { 'event_category': 'picker_tool' });
             }
 
             const reader = new FileReader();
             reader.onload = (ev) => {
-                // Changing the src automatically triggers the 'load' event listener above
+                // We must define what happens AFTER the image data is ready
+                displayImg.onload = () => {
+                    setupCanvasForImage();
+                    // Clean up the listener so it doesn't interfere later
+                    displayImg.onload = null; 
+                };
+                
+                // Trigger the load
                 displayImg.src = ev.target.result;
                 document.getElementById('resultBox').style.display = 'none';
             };
