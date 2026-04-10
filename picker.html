@@ -102,18 +102,20 @@
     </div>
 
     <div id="imageContainer">
-       <div id="emptyState">
-            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" style="opacity:0.5; margin-bottom:10px;">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-            </svg>
-            <p>
-                Upload a photo to start picking.<br>
-                <span style="font-size: 12px; opacity: 0.6;">The process is local and the image is not transmitted to any server.</span>
-            </p>
+        <div id="emptyState">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" style="opacity:0.5; margin-bottom:10px;">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <p>Upload a photo to start picking.</p>
+            </div>
+            <img id="displayImg" src="beignets-task-guide.png">
         </div>
-        <img id="displayImg" src="">
+
+        <!-- NEW PRIVACY FOOTER -->
+        <div style="position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 11px; color: #555; pointer-events: none; z-index: 5;">
+            Colors are processed locally. Images are never sent to any server.
     </div>
 
     <div id="resultBox">
@@ -204,22 +206,53 @@
             document.getElementById('resultBox').style.display = 'none';
         };
 
-        // Upload
+        // --- PREPARE IMAGE FOR PIXEL PICKING ---
+        // --- 1. THE SHARED SETUP FUNCTION ---
+        function setupCanvasForImage() {
+            if (!displayImg.naturalWidth) return; // Safety check
+            document.getElementById('emptyState').style.display = 'none';
+            
+            // Sync the invisible canvas to the NEW image's dimensions
+            canvas.width = displayImg.naturalWidth;
+            canvas.height = displayImg.naturalHeight;
+            
+            // Draw the new image onto the math layer
+            ctx.drawImage(displayImg, 0, 0);
+            
+            // Refresh the circular cursor size
+            updateCursor();
+            console.log("Canvas updated for new image:", canvas.width, "x", canvas.height);
+        }
+
+        // --- 2. INITIAL LOAD (For default image) ---
+        if (displayImg.complete) {
+            setupCanvasForImage();
+        } else {
+            displayImg.onload = setupCanvasForImage;
+        }
+
+        // --- 3. HANDLE NEW UPLOADS ---
         fileInput.onchange = (e) => {
             const file = e.target.files[0];
             if(!file) return;
+            
+            // Optional Analytics
+            if (typeof gtag === 'function') {
+                gtag('event', 'upload_image', { 'event_category': 'picker_tool' });
+            }
+
             const reader = new FileReader();
-            gtag('event', 'upload_image', { 'event_category': 'picker_tool' });
             reader.onload = (ev) => {
-                displayImg.src = ev.target.result;
+                // We must define what happens AFTER the image data is ready
                 displayImg.onload = () => {
-                    document.getElementById('emptyState').style.display = 'none';
-                    canvas.width = displayImg.naturalWidth;
-                    canvas.height = displayImg.naturalHeight;
-                    ctx.drawImage(displayImg, 0, 0);
-                    document.getElementById('resultBox').style.display = 'none';
-                    updateCursor();
+                    setupCanvasForImage();
+                    // Clean up the listener so it doesn't interfere later
+                    displayImg.onload = null; 
                 };
+                
+                // Trigger the load
+                displayImg.src = ev.target.result;
+                document.getElementById('resultBox').style.display = 'none';
             };
             reader.readAsDataURL(file);
         };
