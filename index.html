@@ -324,7 +324,7 @@
     <script type="module">
         // 1. ALL IMPORTS GO HERE AT THE TOP
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, updateDoc, increment, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, updateDoc, increment, onSnapshot, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
 
         // 2. INITIALIZE FIREBASE HERE
@@ -648,11 +648,13 @@
                     winnerCount: 0,
                     totalTries: 0,
                     totalSeconds: 0,
-                    totalIncorrectGuesses: 1 
+                    totalIncorrectGuesses: 1,
+                    lastGuess: serverTimestamp()
                 });
             } else {
                 await updateDoc(statsRef, {
-                    totalIncorrectGuesses: increment(1)
+                    totalIncorrectGuesses: increment(1),
+                    lastGuess: serverTimestamp()
                 });
             }
         } catch(e) {
@@ -675,7 +677,8 @@
                         winnerCount: 1, 
                         totalTries: tries, 
                         totalSeconds: seconds,
-                        totalIncorrectGuesses: 0 
+                        totalIncorrectGuesses: 0,
+                        lastWin: serverTimestamp()
                     });
                 } else {
                     // Future winners update counters and calculate rank
@@ -683,7 +686,8 @@
                     await updateDoc(statsRef, {
                         winnerCount: increment(1),
                         totalTries: increment(tries),
-                        totalSeconds: increment(seconds)
+                        totalSeconds: increment(seconds),
+                        lastWin: serverTimestamp()
                     });
                 }
 
