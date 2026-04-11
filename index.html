@@ -551,7 +551,7 @@
             
             gameState.guesses.push(newGuess);
             
-            if (deltaE < 0.5) {
+            if (deltaE < 0.1) {
                 gameState.won = true;
                 const duration = Math.floor((Date.now() - gameState.startTime) / 1000);
                 submitWinToFirebase(duration); 
@@ -598,7 +598,7 @@
         const deltaE = calcDeltaE(targetLab, gLab);
         let hints = [];
         
-        const hintDeltaeThreshold = 1.5
+        const hintDeltaeThreshold = 1.0
         if (targetLab.l > gLab.l + hintDeltaeThreshold) hints.push('Lighter ↑');
         else if (targetLab.l < gLab.l - hintDeltaeThreshold) hints.push('Darker ↓');
         if (targetLab.a > gLab.a + hintDeltaeThreshold) hints.push('Redder +a');
@@ -607,12 +607,12 @@
         else if (targetLab.b < gLab.b - hintDeltaeThreshold) hints.push('Bluer -b');
 
         // Only say Target Reached if it is actually the winning threshold
-        const hintString = (deltaE < 0.5) ? '✨ Target Reached!' : hints.join(' • ');
+        const hintString = (deltaE < 0.1) ? '✨ Target Reached!' : hints.join(' • ');
         const hintId = `hint-text-${g.number}`;
 
         // 2. ONLY SHOW BUTTON IF UNLOCKED OR IF USER WON THIS GUESS
         let hintButtonHTML = '';
-        if (canShowHints || deltaE < 0.5) {
+        if (canShowHints || deltaE < 0.1) {
             hintButtonHTML = `
                 <button onclick="document.getElementById('${hintId}').style.display='block'; this.style.display='none';" 
                         style="background:rgba(255,255,255,0.15); border:1px solid currentColor; color:inherit; border-radius:4px; width:24px; height:24px; cursor:pointer; margin-right:5px; font-size:12px; display:flex; align-items:center; justify-content:center;">
