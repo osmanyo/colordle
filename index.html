@@ -558,7 +558,7 @@
                 revealWin(true);
             }
             else {
-            logAttemptToFirebase();
+            logAttemptToFirebase(guessDisplayName);
         }
 
             saveGame();
@@ -689,7 +689,7 @@
             });
         }
 
-        async function logAttemptToFirebase() {
+        async function logAttemptToFirebase(colorName) {
         const statsRef = doc(db, "dailyStats", currentSeed.toString());
         try {
             const snap = await getDoc(statsRef);
@@ -700,12 +700,14 @@
                     totalTries: 0,
                     totalSeconds: 0,
                     totalIncorrectGuesses: 1,
-                    lastGuess: serverTimestamp()
+                    lastGuess: serverTimestamp(),
+                    lastGuessName: colorName
                 });
             } else {
                 await updateDoc(statsRef, {
                     totalIncorrectGuesses: increment(1),
-                    lastGuess: serverTimestamp()
+                    lastGuess: serverTimestamp(),
+                    lastGuessName: colorName
                 });
             }
         } catch(e) {
