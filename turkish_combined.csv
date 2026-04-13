@@ -1,0 +1,282 @@
+name,hex,isGood
+"Akuamarin rengi",#7FFFD4,x
+"Alev kırmızısı",#FF4D00,x
+"Alev turuncusu",#FF6600,x
+"Alice mavisi",#F0F8FF,x
+"Alizarin rengi",#E32636,x
+"Altunî",#FFD700,x
+"Altınımsı",#DAA520,x
+"Ametist rengi",#9966CC,x
+"Antik Beyaz",#FAEBD7,x
+"Armut rengi",#D1E231,x
+"Asker yeşili",#4B5320,x
+"Ateş Tuğlası",#B22222,x
+"Ayrık sarı",#FFBA00,x
+"Açık Altın Çubuk Sarısı",#FAFAD2,x
+"Açık Barut Grisi",#778899,x
+"Açık Deniz Yeşili",#20B2AA,x
+"Açık Gri",#D3D3D3,x
+"Açık Gök Mavisi",#87CEFA,x
+"Açık Limon",#FFFACD,x
+"Açık Pembe",#FFB6C1,x
+"Açık Sarı",#FFFFE0,x
+"Açık Yeşil",#90EE90,x
+"Açık galibarda",#FF77FF,x
+"Açık mavi",#ADD8E6,x
+"Açık mor",#E0B0FF,x
+"Açık turkuaz",#08E8DE,x
+"Açık yeşil",#66FF00,x
+"Açık yeşil",#7FFF00,x
+"Açık yeşil sarı",#DFFF00,x
+"Açık Çelik Mavisi",#B0C4DE,x
+"Aşı boyası",#CC7722,x
+"Bakır rengi",#B87333,x
+"Barut Mavisi",#6A5ACD,x
+"Barut rengi",#3D2B1F,x
+"Bataklık yeşili",#ACB78E,x
+"Bebek mavisi",#E0FFFF,x
+"Bej",#F5F5DC,x
+"Berrak mavi",#007BA7,x
+"Beyaz",#FFFFFF,x
+"Beyaz Duman",#F5F5F5,x
+"Beyazlatılmış Badem",#FFEBCD,x
+"Bisque",#FFE4C4,x
+"Bondi mavisi",#0095B6,x
+"Bordo",#800000,x
+"Bronz rengi",#CD7F32,x
+"Burgonya",#900020,x
+"Buğday rengi",#F5DEB3,x
+"Camgöbeği",#00FFFF,x
+"Camgöbeği mavisi",#1560BD,x
+"Celadon",#ACE1AF,x
+"Dağ pembesi",#997A8D,x
+"Deniz kabuğu",#FFF5EE,x
+"Deniz yeşili",#2E8B57,x
+"Derin Gök Mavisi",#00BFFF,x
+"Derin Pembe",#FF1493,x
+"Devedikeni rengi",#D8BFD8,x
+"Domates",#FF6347,x
+"Donuk turuncu",#FFA000,x
+"Elektrik lime rengi",#CCFF00,x
+"Elektrik mavisi",#7DF9FF,x
+"Elektrik mor rengi",#BF00FF,x
+"Elektrik yeşili (X11 yeşil)",#00FF00,x
+"Elektrik çivit rengi",#6600FF,x
+"Enternasyonal turuncu",#FF4F00,x
+"Erik",#DDA0DD,x
+"Eski Lavanta",#796878,x
+"Eski altın",#CFB53B,x
+"Eski gül",#C08081,x
+"Eski iplik",#FDF5E6,x
+"Eyer Kahverengi",#8B4513,x
+"Eğrelti yeşili",#4F7942,x
+"Falu kırmızısı",#801818,x
+"Fildişi rengi",#FFFFF0,x
+"Fransız gül rengi",#F64A8A,x
+"Gainsboro",#DCDCDC,x
+"Eflatun / Fuşya",#FF00FF,x
+"Gece Yarısı Mavisi",#191970,x
+"Gece mavisi",#003366,x
+"Gri",#808080,x
+"Gri-kuşkonmaz",#465945,x
+"Gök Mavisi",#F0FFFF,x
+"Gök mavisi",#007FFF,x
+"Gök mavisi",#2A52BE,x
+"Gökyüzü Mavi",#87CEEB,x
+"Gül rengi",#FF007F,x
+"Gül rengi",#996666,x
+"Gümüşi",#C0C0C0,x
+"Hafif Mercan",#F08080,x
+"Hafif Somon",#FFA07A,x
+"Haki",#C3B091,x
+"Haki (X11)",#F0E68C,x
+"Ham toprak",#734A12,x
+"Harbiyeli Mavisi",#5F9EA0,x
+"Hardal rengi",#FFDB58,x
+"Havuç rengi",#ED9121,x
+"Hayalet Beyaz",#F8F8FF,x
+"Hile mavisi",#1E90FF,x
+"Hint Kırmızısı",#CD5C5C,x
+"Holivod kırmızısı",#F400A1,x
+"Horozibiği rengi",#E52B50,x
+"Kabak rengi",#FF7518,x
+"Kahverengi",#993300,x
+"Kahverengi",#A52A2A,x
+"Kahverengimsi gri",#483C32,x
+"Kamuflâj yeşili",#78866B,x
+"Kar",#FFFAFA,x
+"Karanfil pembesi",#FFA6C9,x
+"Karanfil rengi",#F95A61,x
+"Kardinal rengi",#C41E3A,x
+"Karolina mavisi",#99BADD,x
+"Kayısı rengi",#FBCEB1,x
+"Kehribar rengi",#FFBF00,x
+"Kestane rengi",#954535,x
+"Keten rengi",#FAF0E6,x
+"Kiraz kırmızısı",#DE3163,x
+"Kobalt rengi",#0047AB,x
+"Koyu Altın Çubuk",#B8860B,x
+"Koyu Arduvaz Grisi",#2F4F4F,x
+"Koyu Barut Mavisi",#483D8B,x
+"Koyu Camgöbeği",#008B8B,x
+"Koyu Deniz Yeşili",#8FBC8F,x
+"Koyu Gri",#A9A9A9,x
+"Koyu Kırmızı",#8B0000,x
+"Koyu Macenta",#8B008B,x
+"Koyu Mor",#9400D3,x
+"Koyu Orkide",#9932CC,x
+"Koyu Somon",#E9967A,x
+"Koyu Turkuaz",#00CED1,x
+"Koyu Turuncu",#FF8C00,x
+"Koyu Yeşil",#006400,x
+"Koyu Zeytin Yeşili",#556B2F,x
+"Koyu galibarda",#C154C1,x
+"Koyu haki",#BDB76B,x
+"Koyu kahverengi",#654321,x
+"Koyu kestane",#986960,x
+"Koyu kırmızı",#DC143C,x
+"Koyu leylak",#9955BB,x
+"Koyu magenta",#CD00CC,x
+"Koyu mandalina",#FFA812,x
+"Koyu mavi",#00008B,x
+"Koyu menekşe",#423189,x
+"Koyu mercan",#CD5B45,x
+"Koyu mor",#CC8899,x
+"Koyu pastel yeşil",#03C03C,x
+"Koyu pembe",#E75480,x
+"Koyu toz mavi",#003399,x
+"Koyu turkuaz",#116062,x
+"Koyu yeşil",#013220,x
+"Koyu şeftali",#FFCBA4,x
+"Kraliyet mavisi",#4169E1,x
+"Kremrengi",#FFFDD0,x
+"Kum kahverengisi",#F4A460,x
+"Kuşkonmaz rengi",#7BA05B,x
+"Kösele rengi",#F0DC82,x
+"Küçük kara",#E2725B,x
+"Kırmızı",#FF0000,x
+"Kırmızı şarap",#92000A,x
+"Kırmızı-menekşe",#C71585,x
+"Kırmızımsı kahverengi",#E97451,x
+"Kızıl yumurta mavisi",#00CCCC,x
+"Lacivert",#000080,x
+"Lacivert",#120A8F,x
+"Lavanta",#E6E6FA,x
+"Lavanta galibarda",#EE82EE,x
+"Lavanta grisi",#BDBBD7,x
+"Lavanta gül rengi",#FBA0E3,x
+"Lavanta mavisi",#CCCCFF,x
+"Lavanta mor",#967BB6,x
+"Lavanta pembesi",#FFF0F5,x
+"Lavanta pembesi",#FBAED2,x
+"Lavanta rengi",#B57EDC,x
+"Leylak rengi",#C8A2C8,x
+"Lime rengi",#BFFF00,x
+"Limon Yeşili",#32CD32,x
+"Limoni",#FDE910,x
+"Malakit rengi",#0BDA51,x
+"Mandalina rengi",#FFCC00,x
+"Mavi",#0000FF,x
+"Mavi Menekşe",#8A2BE2,x
+"Menekşe rengi",#8000FF,x
+"Menekşe-patlıcan rengi",#991199,x
+"Mercan",#FF7F50,x
+"Mercan Kırmızısı",#FF4040,x
+"Mokasen",#FFE4B5,x
+"Mor",#6A0DAD,x
+"Mor",#800080,x
+"Morsalkım rengi",#C9A0DC,x
+"Mısır Püskülü",#FFF8DC,x
+"Mısır rengi",#FBEC5D,x
+"Nane Kreması",#F5FFFA,x
+"Nane yeşili",#98FF98,x
+"Nar rengi",#F34723,x
+"Navajo-beyazı",#FFDEAD,x
+"Okul otobüsü sarısı",#FFD800,x
+"Orkide rengi",#DA70D6,x
+"Orman yeşili",#228B22,x
+"Orta Bahar Yeşili",#00FA9A,x
+"Orta Barut Mavisi",#7B68EE,x
+"Orta Boy Orkide",#BA55D3,x
+"Orta Deniz Yeşili",#3CB371,x
+"Orta Mavi",#0000CD,x
+"Orta Mor",#9370DB,x
+"Orta Su Denizi",#66CDAA,x
+"Orta Turkuaz",#48D1CC,x
+"Orta şarap",#AF4035,x
+"Papaya",#FFEFD5,x
+"Pas rengi",#B7410E,x
+"Pastel pembe",#FFD1DC,x
+"Pastel yeşili",#77DD77,x
+"Patlıcan rengi",#614051,x
+"Pembe",#FFC0CB,x
+"Pembe Kahverengi",#BC8F8F,x
+"Pembe-turuncu",#FF9966,x
+"Pers gülü",#FE28A2,x
+"Pers kırmızısı",#CC3333,x
+"Pers lacivert",#32127A,x
+"Pers mavisi",#1C39BB,x
+"Pers pembesi",#F77FBE,x
+"Pers yeşili",#00A693,x
+"Peru",#CD853F,x
+"Peygamber çiçeği rengi",#6495ED,x
+"Prusya mavisi",#003153,x
+"Puslu Gül",#FFE4E1,x
+"Safir rengi",#082567,x
+"Safran rengi",#F4C430,x
+"Salamura grisi",#708090,x
+"Sarı",#FFFF00,x
+"Sarı Yeşil",#9ACD32,x
+"Sarımsı kahverengi",#D2B48C,x
+"Sarımsı pembe",#FF8C69,x
+"Sienna",#A0522D,x
+"Siyah",#000000,x
+"Siyahımsı koyu kahverengi",#704214,x
+"Siğil otu",#DF73FF,x
+"Soluk Altın Çubuk",#EEE8AA,x
+"Soluk Gri",#696969,x
+"Soluk Menekşe Kırmızı",#DB7093,x
+"Soluk Turkuaz",#AFEEEE,x
+"Soluk Yeşil",#98FB98,x
+"Somon",#FA8072,x
+"Soytarı",#3FFF00,x
+"Sıcak Magenta",#FF00CC,x
+"Sıcak pembe",#FF69B4,x
+"Tarçın rengi",#7B3F00,x
+"Teal",#008080,x
+"Toz mavi",#B0E0E6,x
+"Turkuaz",#40E0D0,x
+"Turuncu",#FF7F00,x
+"Turuncu (web)",#FFA500,x
+"Turuncu Kırmızı",#FF4500,x
+"Turuncumsu sarı",#E49B0F,x
+"Uluslararası Klein mavisi",#002FA7,x
+"Viridian",#40826D,x
+"Vurgun pembe",#FC0FC0,x
+"Yanık Toprak rengi",#8A3324,x
+"Yanık turuncu",#CC5500,x
+"Yeşil",#008000,x
+"Yeşil Çimen",#7CFC00,x
+"Yeşil-sarı",#ADFF2F,x
+"Yeşim",#00A86B,x
+"Yonca yeşili",#009E60,x
+"Yosun yeşili",#ADDFAD,x
+"Zeytin Yeşili",#6B8E23,x
+"Zeytuni",#808000,x
+"Zinnwaldite",#EBC2AF,x
+"Zümrüt yeşili",#50C878,x
+"Çam yeşili",#01796F,x
+"Çay yeşili",#D0F0C0,x
+"Çelik mavisi",#4682B4,x
+"Çikolata rengi",#D2691E,x
+"Çivit rengi",#4B0082,x
+"Çiçek Beyazı",#FFFAF0,x
+"İlkbahar yeşili",#00FF7F,x
+"İri Odun",#DEB887,x
+"İslam yeşili",#009000,x
+"Şarap rengi",#960018,x
+"Şeftali Pufu",#FFDAB9,x
+"Şeftali rengi",#FFE5B4,x
+"Şeftali-sarı",#FADFAD,x
+"Şeftali-turuncu",#FFCC99,x
+"Şeker Kavunu",#F0FFF0,x

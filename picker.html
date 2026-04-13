@@ -95,6 +95,9 @@
                         <option value="windows">MS Windows</option>
                     </optgroup>
                     <optgroup label="Cultural/Traditional">
+                        <!-- <option value="turkish_colors.csv">Türkçe (Wikipedia)</option>  -->
+                        <!-- <option value="turkce2.csv">Türkçe 2</option>  -->
+                        <option value="turkish_combined.csv">Türkçe Kombine</option> 
                         <option value="japaneseTraditional">Japanese Traditional</option>
                         <option value="chineseTraditional">Chinese Traditional</option>
                         <option value="french">French Colors</option>
@@ -129,7 +132,7 @@
         <div id="emptyState">
             <p>Upload a photo to start picking</p>
         </div>
-        <img id="displayImg" src="beignets-task-guide.png">
+        <img id="displayImg" src="berni-wittmann-GaffdtJ2aFM-unsplash.jpg">
     </div>
 
     <div style="position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 10px; color: #444; pointer-events: none;">
@@ -169,28 +172,50 @@
         const sampleSlider = document.getElementById('sampleSlider');
         const imageContainer = document.getElementById('imageContainer');
 
-        // --- LOAD DICTIONARY (Color Pizza API) ---
+
         async function loadDictionary(listName) {
-                    try {
-                        // Show a tiny indicator in the console or UI if you like
-                        const resp = await fetch(`https://api.color.pizza/v1/?list=${listName}`);
-                        const d = await resp.json();
-                        
-                        // Map the API results to our local ALL_COLORS array
-                        ALL_COLORS = d.colors.map(c => ({ 
-                            name: c.name, 
-                            hex: c.hex 
-                        }));
-
-                        document.getElementById('colorCount').innerText = ALL_COLORS.length.toLocaleString();
-
-                        // If a user has already picked a color, update the results immediately!
-                        if (lastPickedHex) processColor(lastPickedHex);
-                        
-                    } catch (err) { 
-                        console.error("API Error:", err); 
-                    }
+            ALL_COLORS = []; 
+            try {
+                // 1. Handle LOCAL CSV files 
+                if (listName.endsWith('.csv')) {
+                    const resp = await fetch(listName); // Will fetch 'turkish_colors.csv'
+                    const csv = await resp.text();
+                    
+                    // Parse CSV
+                    csv.split('\n').slice(1).forEach(line => {
+                        // Regex handles names wrapped in quotes (e.g. "Mavi, Açık")
+                        const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                        if (parts && parts.length >= 2) {
+                            ALL_COLORS.push({ 
+                                name: parts[0].replace(/"/g, '').trim(), 
+                                hex: parts[1].trim(),
+                                isGood: parts[2] && parts[2].trim().toLowerCase() === 'x'
+                            });
+                        }
+                    });
+                } 
+                // 2. Handle API lists (XKCD, HTML, etc)
+                else {
+                    const resp = await fetch(`https://api.color.pizza/v1/?list=${listName}`);
+                    const d = await resp.json();
+                    ALL_COLORS = d.colors.map(c => ({ name: c.name, hex: c.hex, isGood: true }));
                 }
+
+                // Update counters/UI if needed
+                const countEl = document.getElementById('colorCount');
+                if(countEl) countEl.innerText = ALL_COLORS.length.toLocaleString();
+
+                // If a color was picked, reprocess
+                if (typeof lastPickedHex !== 'undefined' && lastPickedHex) {
+                    processColor(lastPickedHex);
+                }
+                
+
+                
+            } catch (err) { 
+                console.error("Error loading colors:", err); 
+            }
+        }
 
         document.getElementById('dictionarySelect').onchange = (e) => loadDictionary(e.target.value);
         loadDictionary('default');
