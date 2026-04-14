@@ -131,6 +131,11 @@
             </div>
         </div>
         <p id="accuracy"></p>
+
+        <button id="pickerTeleportBtn" class="btn" style="width: 100%; margin-top: 15px; justify-content: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+            View Similar Colors in 3D
+        </button>
     </div>
 
     <canvas id="procCanvas" style="display:none;"></canvas>
@@ -168,7 +173,7 @@
         }
 
         if (displayImg.complete) setupCanvas();
-        else displayImg.onload = setupCanvas;
+        else displayImg.onload = setupCanresvas;
 
         document.getElementById('fileInput').onchange = (e) => {
             const file = e.target.files[0];
@@ -258,6 +263,11 @@
                 box.style.background = 'rgba(26, 26, 27, 0.95)';
                 box.style.color = '#fff';
             }
+
+            const teleportBtn = document.getElementById('pickerTeleportBtn');
+            teleportBtn.onclick = () => {
+                window.location.href = `explore.html?goto=${encodeURIComponent(pickHex)}`;
+            };
         }
         document.getElementById('closeResult').onclick = () => document.getElementById('resultBox').style.display='none';
     </script>

@@ -247,6 +247,7 @@
         import { converter, parse } from 'https://esm.sh/culori@3';
         import Stats from 'https://esm.sh/three@0.160.0/examples/jsm/libs/stats.module.js';
         import { ALL_COLORS, setupDictionarySelector } from './dictionary.js';
+        let isInitialUniverseLoad = true;
 
     // SETUP STATS (Hidden by default)
     const stats = new Stats();
@@ -603,7 +604,7 @@ compassGroup.add(core);
         const colorData = []; 
         let pointsMesh = null;
 
-        async function refresh3DUniverse() {
+        async function  refresh3DUniverse() {
             // 1. Clear old dots if changing lists
             if (pointsMesh) {
                 scene.remove(pointsMesh);
@@ -649,7 +650,10 @@ compassGroup.add(core);
             scene.add(pointsMesh);
             document.getElementById('loading').style.display = 'none';
 
-            handleTeleport();
+            if (isInitialUniverseLoad) {
+                handleTeleport();
+                isInitialUniverseLoad = false; // Disable camera reset for future list changes
+            }
         }
 
             function handleTeleport() {
@@ -686,6 +690,7 @@ compassGroup.add(core);
                     document.getElementById('hud').style.display = 'block';
                 } else {
                     camera.position.set(0, 0, 250);
+                    camera.rotation.set(0, 0, 0);
                 }
             }   
 
