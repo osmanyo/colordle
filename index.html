@@ -282,6 +282,26 @@
             .top-nav-links span { display: none; }
             .top-nav-links a { padding: 8px; }
         }
+
+        /* Desktop: Hide the row inside the modal */
+        .mobile-only-dict { display: none; }
+
+        /* Mobile (Under 768px wide) */
+        @media (max-width: 768px) {
+            /* Hide the bottom-right pill on mobile */
+            #dictControl { display: none !important; }
+            
+            /* Show the row inside the Gear settings modal */
+            .mobile-only-dict { display: block; }
+            
+            /* Center the Seed bar on mobile so it looks balanced alone */
+            #seedControl {
+                left: 50% !important;
+                transform: translateX(-50%);
+                width: 90%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -373,10 +393,16 @@
 
     <!-- SETTINGS MODAL -->
     <div id="settingsModal">
+        <div class="setting-row mobile-only-dict">
+            <label class="setting-label">Color List:</label>
+            <div id="mobileDictContainer"></div>
+            <div class="separator"></div>
+        </div>      
+
         <div class="setting-row">
-        <label class="setting-label">Max Suggestions: <span id="maxCountDisplay"></span></label>
-        <input type="range" id="maxSuggestionsInput" min="0" max="50">
-    </div>
+            <label class="setting-label">Max Suggestions: <span id="maxCountDisplay"></span></label>
+            <input type="range" id="maxSuggestionsInput" min="0" max="50">
+        </div>
         <div class="setting-row">
             <label class="setting-label">Sort History By:</label>
             <select id="sortOrderInput">
@@ -969,22 +995,29 @@
             }
         }
 
+
+        
+        // 1. Determine which container to use based on screen width
+        const isMobileLayout = window.innerWidth <= 768;
+        const targetID = isMobileLayout ? 'mobileDictContainer' : 'dictSelectorContainer';
+
+        // 2. Track the first load
         let initialDictionaryLoad = true;
 
-        setupDictionarySelector('dictSelectorContainer', () => {
-            // 1. If this is NOT the first time loading (meaning the user clicked the dropdown)
-            // then we clear the URL parameters.
+        setupDictionarySelector(targetID, () => {
+            // This callback runs on page load AND whenever the dropdown changes
+            
+            // 3. Logic: If this isn't the first load, it means the user manually 
+            // changed the list. We should clear the URL (?seed=) now.
             if (!initialDictionaryLoad) {
                 const cleanUrl = window.location.origin + window.location.pathname;
                 window.history.replaceState({}, document.title, cleanUrl);
             }
 
-            // 2. Set flag to false so future changes trigger the URL reset
+            // 4. Flip the flag and start the game
             initialDictionaryLoad = false;
-
-            // 3. Start/Reload the game logic
             startColordle();
-        });     
+        });
 
 
     
