@@ -172,7 +172,7 @@
                 <span class="setting-label">Dot Size</span>
                 <span id="sizeVal" class="setting-value">1.5</span>
             </div>
-            <input type="range" id="sizeSlider" min="0.05" max="5.0" step="0.05" value="1.5">
+            <input type="range" id="sizeSlider" min="0.05" max="10" step="0.05" value="1.5">
         </div>
 
         <div class="setting-row">
@@ -196,6 +196,8 @@
             <label for="fpsToggle" style="margin:0;">Show FPS</label>
             <input type="checkbox" id="fpsToggle" style="width: auto; cursor: pointer;">
         </div>
+
+        <div class="setting-row" id="dictSelectorContainer"></div>
     </div> <!-- Closing settingsPanel -->
     </div>
     
@@ -244,6 +246,7 @@
         import { PointerLockControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
         import { converter, parse } from 'https://esm.sh/culori@3';
         import Stats from 'https://esm.sh/three@0.160.0/examples/jsm/libs/stats.module.js';
+        import { ALL_COLORS, setupDictionarySelector } from './dictionary.js';
 
     // SETUP STATS (Hidden by default)
     const stats = new Stats();
@@ -271,7 +274,7 @@
         document.getElementById('sizeVal').innerText = settings.pointSize;
         document.getElementById('speedVal').innerText = settings.speed;
 
-        const CSV_FILE = 'colornames.csv';
+
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
         // --- THREE.JS SETUP ---
@@ -511,6 +514,7 @@ compassGroup.add(core);
             const val = parseFloat(e.target.value);
             if(pointsMesh) pointsMesh.material.size = val;
             document.getElementById('sizeVal').innerText = val.toFixed(2);
+            raycaster.params.Points.threshold = val / 2.5; 
         });
 
         document.getElementById('speedSlider').addEventListener('input', (e) => {
@@ -596,78 +600,98 @@ compassGroup.add(core);
         const colorData = []; 
         let pointsMesh = null;
 
-        async function initParticles() {
-            try {
-                const response = await fetch(CSV_FILE);
-                const text = await response.text();
-                const lines = text.split('\n');
-                const positions = [];
-                const colors = [];
+        async function refresh3DUniverse() {
+            // 1. Clear old dots if changing lists
+            if (pointsMesh) {
+                scene.remove(pointsMesh);
+                pointsMesh.geometry.dispose();
+                pointsMesh.material.dispose();
+            }
+            
+            // 2. Clear array data
+            colorData.length = 0; 
+            const positions = [];
+            const colors = [];
 
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    const parts = line.split(',');
-                    if (parts.length < 2) continue;
+            // 3. Build new universe from ALL_COLORS
+            ALL_COLORS.forEach(c => {
+                const parsed = parse(c.hex);
+                if (parsed) {
+                    const lab = toLab(parsed);
+                    const x = lab.a * 3; 
+                    const y = (lab.l - 50) * 3; 
+                    const z = lab.b * 3; 
 
-                    const name = parts[0].trim();
-                    const hex = parts[1].trim();
-                    const parsed = parse(hex);
-                    
-                    if (parsed) {
-                        const lab = toLab(parsed);
-                        const x = lab.a * 3; 
-                        const y = (lab.l - 50) * 3; 
-                        const z = lab.b * 3; 
-
-                        positions.push(x, y, z);
-                        const color = new THREE.Color(hex);
-                        colors.push(color.r, color.g, color.b);
-                        colorData.push({ name, hex, x, y, z });
-                    }
+                    positions.push(x, y, z);
+                    const color = new THREE.Color(c.hex);
+                    colors.push(color.r, color.g, color.b);
+                    colorData.push({ name: c.name, hex: c.hex, x, y, z });
                 }
+            });
 
-                const geometry = new THREE.BufferGeometry();
-                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-                const material = new THREE.PointsMaterial({ size: settings.pointSize, vertexColors: true, sizeAttenuation: true,map: createCircleTexture(), alphaTest : 0.5  });
-                pointsMesh = new THREE.Points(geometry, material);
-                scene.add(pointsMesh);
-                
-                // camera.position.set(0, 0, 250);
-                document.getElementById('loading').style.display = 'none';
-                // --- TELEPORT LOGIC (CLEAN VERSION) ---
+            // 4. Create new mesh
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            const material = new THREE.PointsMaterial({ 
+                size: settings.pointSize, 
+                vertexColors: true, 
+                sizeAttenuation: true,
+                map: createCircleTexture(), 
+                alphaTest: 0.5  
+            });
+
+            pointsMesh = new THREE.Points(geometry, material);
+            scene.add(pointsMesh);
+            document.getElementById('loading').style.display = 'none';
+
+            handleTeleport();
+        }
+
+            function handleTeleport() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const goToHex = urlParams.get('goto');
 
                 if (goToHex) {
+                    // 1. Try to find it in the current list
                     const match = colorData.find(c => c.hex.toLowerCase() === goToHex.toLowerCase());
+                    
                     if (match) {
-                        // 1. Position camera
                         camera.position.set(match.x, match.y, match.z + 45);
-                        
-                        // 2. Point camera at the dot
                         camera.lookAt(match.x, match.y, match.z);
-                        
-                        // 3. IMPORTANT: Update rotation order and reset the control angles
-                        // This prevents the "snap" or "jerk" when you first click
-                        camera.rotation.order = 'YXZ'; 
-
-                        // 4. Clean UI
-                        document.getElementById('instructions').style.display = 'none';
-                        document.getElementById('hud').style.display = 'block';
-                        document.getElementById('colorName').innerText = "Click to Explore";
-                        document.getElementById('colorHex').innerText = "Target Set";
+                        document.getElementById('colorName').innerText = match.name;
+                        document.getElementById('colorHex').innerText = match.hex;
+                    } else {
+                        // 2. If not in list, calculate coordinates manually from hex
+                        const parsed = parse(goToHex);
+                        if (parsed) {
+                            const lab = toLab(parsed);
+                            const x = lab.a * 3; 
+                            const y = (lab.l - 50) * 3; 
+                            const z = lab.b * 3; 
+                            camera.position.set(x, y, z + 45);
+                            camera.lookAt(x, y, z);
+                                
+                            // Show that it's an external color
+                            document.getElementById('colorName').innerText = "Unnamed Color";
+                            document.getElementById('colorHex').innerText = goToHex.toUpperCase();
+                        }
                     }
+                    camera.rotation.order = 'YXZ'; 
+                    document.getElementById('instructions').style.display = 'none';
+                    document.getElementById('hud').style.display = 'block';
                 } else {
                     camera.position.set(0, 0, 250);
                 }
-            } catch (err) {
-                document.getElementById('loading').innerText = "Error loading CSV (Use Local Server!)";
-            }
-        }
+            }   
 
-        initParticles();
+        setupDictionarySelector('dictSelectorContainer', () => {
+            // This callback runs immediately, and also every time you change the dropdown
+            refresh3DUniverse();
+            document.getElementById('sizeVal').innerText = 1.5
+            document.getElementById('sizeSlider').value = 1.5
+        });
 
         // --- LABELS ---
         function createTextSprite(message, color) {

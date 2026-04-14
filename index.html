@@ -376,6 +376,8 @@
         <button id="shareBtn" class="icon-btn" title="Share this Match">
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
         </button>
+
+        <div id="dictSelectorContainer" ></div>
     </div>
 
     <script type="module">
@@ -383,7 +385,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, updateDoc, increment, onSnapshot, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
-
+        import { ALL_COLORS, setupDictionarySelector } from './dictionary.js';
+        
         // 2. INITIALIZE FIREBASE HERE
         const firebaseConfig = {
             apiKey: "AIzaSyB_349ubNBxT7hkEPeny6T10Ary9wRtUCw",
@@ -402,7 +405,7 @@
         const toLab = converter('lab');
         const calcDeltaE = differenceCiede2000();
 
-        let ALL_COLORS = [];
+        
         let guessCount = 0;
         let targetColor = null;
         let targetLab = null;
@@ -421,29 +424,6 @@
 
         let gameState = { seed: null, won: false, guesses: [], submitted: false, rank: null };
 
-        async function loadColors() {
-            try {
-                const response = await fetch(CSV_URL);
-                const text = await response.text();
-                const lines = text.split('\n');
-                for(let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if(line) {
-                        const parts = line.split(','); 
-                        if(parts.length >= 2) {
-                            ALL_COLORS.push({
-                                name: parts[0].trim(),
-                                hex: parts[1].trim(),
-                                isGood: parts[2] && parts[2].trim().toLowerCase() === 'x'
-                            });
-                        }
-                    }
-                }
-
-            } catch (err) {
-                console.error("Error loading CSV", err);
-            }
-        }
 
         function initGame(customSeed = null) {
             document.getElementById('historyList').innerHTML = '';
@@ -454,26 +434,18 @@
             currentSeed = customSeed !== null ? customSeed : Math.floor(Date.now() / 86400000);
             document.getElementById('seedInput').value = currentSeed;
 
-            const savedData = localStorage.getItem('colordle_save');
+            // UNIQUE KEY: e.g., colordle_save_xkcd_20557
+            const currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
+            const saveKey = `colordle_save_${currentList}_${currentSeed}`;
+            
+            const savedData = localStorage.getItem(saveKey);
             if (savedData) {
-                const parsed = JSON.parse(savedData);
-                if (parsed.seed === currentSeed) {
-                    gameState = parsed;
-                    // Fix for older saves that didn't have these
-                    if (gameState.submitted === undefined) gameState.submitted = false;
-                    if (gameState.rank === undefined) gameState.rank = null;
-                    
-                    guessCount = gameState.guesses.length; 
-                } else {
-                    gameState = { seed: currentSeed, won: false, guesses: [], submitted: false, rank: null };
-                    guessCount = 0;
-                    localStorage.removeItem('colordle_save');
-                }
+                gameState = JSON.parse(savedData);
+                guessCount = gameState.guesses.length; 
             } else {
                 gameState = { seed: currentSeed, won: false, guesses: [], submitted: false, rank: null };
                 guessCount = 0;
             }
-
             const goodColors = ALL_COLORS.filter(c => c.isGood);
             const pool = goodColors.length > 0 ? goodColors : ALL_COLORS;
             const targetIndex = Math.abs(currentSeed) % pool.length;
@@ -576,7 +548,9 @@
         }
 
         function saveGame() {
-            localStorage.setItem('colordle_save', JSON.stringify(gameState));
+            const currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
+            const saveKey = `colordle_save_${currentList}_${currentSeed}`;
+            localStorage.setItem(saveKey, JSON.stringify(gameState));
         }
 
         function renderHistory() {
@@ -671,7 +645,7 @@
             }
 
             
-            unsubscribeStats = onSnapshot(doc(db, "dailyStats", currentSeed.toString()), (snap) => {
+            unsubscribeStats = onSnapshot(getStatsRef(), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
                     globalWinners = data.winnerCount || 0;
@@ -696,7 +670,9 @@
         }
 
         async function logAttemptToFirebase(colorName) {
-        const statsRef = doc(db, "dailyStats", currentSeed.toString());
+
+            
+        const statsRef = getStatsRef();
         try {
             const snap = await getDoc(statsRef);
 
@@ -723,7 +699,7 @@
         async function submitWinToFirebase(seconds) {
             if (gameState.submitted) return; 
 
-            const statsRef = doc(db, "dailyStats", currentSeed.toString());
+            const statsRef = getStatsRef();
             const tries = gameState.guesses.length;
 
             try {
@@ -868,7 +844,8 @@
 
         document.getElementById('shareBtn').addEventListener('click', () => {
             // Generate link with the current seed
-            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}`;
+            const currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
+            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&list=${currentList}`;
             
             navigator.clipboard.writeText(shareUrl).then(() => {
                 const btn = document.getElementById('shareBtn');
@@ -884,17 +861,44 @@
             });
         });
 
-        // Check the URL for a ?seed= parameter when the page loads
-        loadColors().then(() => {
+        // // Check the URL for a ?seed= parameter when the page loads
+        // loadColors().then(() => {
+        //     const urlParams = new URLSearchParams(window.location.search);
+        //     const urlSeed = urlParams.get('seed');
+            
+        //     if (urlParams.has('seed') && !isNaN(parseInt(urlSeed))) {
+        //         initGame(parseInt(urlSeed));
+        //     } else {
+        //         initGame(); // Load the daily challenge by default
+        //     }
+        // });
+
+
+        // This function handles starting the game
+        function startColordle() {
             const urlParams = new URLSearchParams(window.location.search);
             const urlSeed = urlParams.get('seed');
-            
-            if (urlParams.has('seed') && !isNaN(parseInt(urlSeed))) {
+            const urlList = urlParams.get('list');
+
+            if (urlList) {
+                localStorage.setItem('colordle_list', urlList);
+                const selector = document.getElementById('dictionarySelect');
+                if (selector) selector.value = urlList;
+            }
+
+            if (urlSeed !== null && !isNaN(parseInt(urlSeed))) {
                 initGame(parseInt(urlSeed));
             } else {
-                initGame(); // Load the daily challenge by default
+                initGame(); 
             }
-        });
+        }
+
+        setupDictionarySelector('dictSelectorContainer', () => {
+            // This runs on page load AND every time you change the list
+            // It ensures the target color is picked from the NEW list immediately
+            startColordle();
+        });       
+
 
     
         // --- FEEDBACK LOGIC ---
@@ -957,6 +961,12 @@
 
             initGame(null);
         });
+
+        // Helper to get the correct Firebase document reference
+        function getStatsRef() {
+            const currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
+            return doc(db, "dailyStats", currentList + "_" + currentSeed.toString());
+        }
 
     </script>
 </body>

@@ -11,6 +11,7 @@
       gtag('config', 'G-H57NFG20DE');
     </script>
     
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- SEO & Search Console Meta Tags -->
@@ -91,44 +92,7 @@
         
         <div class="toolbar-group">
             <!-- DICTIONARY SELECTOR (Using Pizza API Keys) -->
-            <div class="control-panel">
-                <span style="font-size: 11px; color: #666;">List:</span>
-                <select id="dictionarySelect" style="background: #000; color: #fff; border: none; outline: none;">
-                    <optgroup label="General">
-                        <option value="default">Full List (30k)</option>
-                        <option value="bestOf">Best of (Curated)</option>
-                        <option value="wikipedia">Wikipedia</option>
-                        <option value="xkcd">XKCD Survey</option>
-                    </optgroup>
-                    <optgroup label="Standards">
-                        <option value="html">HTML / CSS</option>
-                        <option value="basic">Basic (16)</option>
-                        <option value="ntc">Name That Color (Classic)</option>
-                        <option value="x11">X11</option>
-                        <option value="windows">MS Windows</option>
-                    </optgroup>
-                    <optgroup label="Cultural/Traditional">
-                        <!-- <option value="turkish_colors.csv">Türkçe (Wikipedia)</option>  -->
-                        <!-- <option value="turkce2.csv">Türkçe 2</option>  -->
-                        <option value="turkish_combined.csv">Türkçe Kombine</option> 
-                        <option value="japaneseTraditional">Japanese Traditional</option>
-                        <option value="chineseTraditional">Chinese Traditional</option>
-                        <option value="french">French Colors</option>
-                        <option value="spanish">Spanish Colors</option>
-                        <option value="german">German Colors</option>
-                    </optgroup>
-                    <optgroup label="Art & History">
-                        <option value="crayola">Crayola Crayons</option>
-                        <option value="osxcrayons">Apple Crayons</option>
-                        <option value="ral">RAL (Industrial)</option>
-                        <option value="sanzoWadaI">Sanzo Wada (Art)</option>
-                        <option value="werner">Werner’s (Darwin-era)</option>
-                        <option value="ridgway">Ridgway’s (Birds)</option>
-                        <option value="leCorbusier">Le Corbusier</option>
-                    </optgroup>
-                </select>
-                <span id="colorCount" style="font-size: 11px; color: #666; margin-left: 5px; padding-left: 7px; border-left: 1px solid #333; min-width: 30px;">0</span>
-            </div>
+            <div id="dictSelectorContainer" class="control-panel"></div>
 
             <div class="control-panel">
                 <span style="font-size: 11px; color: #666;">Area:</span>
@@ -173,10 +137,10 @@
 
     <script type="module">
         import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
+        import { ALL_COLORS, setupDictionarySelector } from './dictionary.js';
 
         const toLab = converter('lab');
         const calcDeltaE = differenceCiede2000();
-        let ALL_COLORS = [];
         let lastPickedHex = null;
 
         const displayImg = document.getElementById('displayImg');
@@ -186,52 +150,12 @@
         const imageContainer = document.getElementById('imageContainer');
 
 
-        async function loadDictionary(listName) {
-            ALL_COLORS = []; 
-            try {
-                // 1. Handle LOCAL CSV files 
-                if (listName.endsWith('.csv')) {
-                    const resp = await fetch(listName); // Will fetch 'turkish_colors.csv'
-                    const csv = await resp.text();
-                    
-                    // Parse CSV
-                    csv.split('\n').slice(1).forEach(line => {
-                        // Regex handles names wrapped in quotes (e.g. "Mavi, Açık")
-                        const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                        if (parts && parts.length >= 2) {
-                            ALL_COLORS.push({ 
-                                name: parts[0].replace(/"/g, '').trim(), 
-                                hex: parts[1].trim(),
-                                isGood: parts[2] && parts[2].trim().toLowerCase() === 'x'
-                            });
-                        }
-                    });
-                } 
-                // 2. Handle API lists (XKCD, HTML, etc)
-                else {
-                    const resp = await fetch(`https://api.color.pizza/v1/?list=${listName}`);
-                    const d = await resp.json();
-                    ALL_COLORS = d.colors.map(c => ({ name: c.name, hex: c.hex, isGood: true }));
-                }
+        setupDictionarySelector('dictSelectorContainer', () => {
+            // This callback runs whenever the list finishes loading or changes
+            if (lastPickedHex) processColor(lastPickedHex);
+        });           
 
-                // Update counters/UI if needed
-                const countEl = document.getElementById('colorCount');
-                if(countEl) countEl.innerText = ALL_COLORS.length.toLocaleString();
 
-                // If a color was picked, reprocess
-                if (typeof lastPickedHex !== 'undefined' && lastPickedHex) {
-                    processColor(lastPickedHex);
-                }
-                
-
-                
-            } catch (err) { 
-                console.error("Error loading colors:", err); 
-            }
-        }
-
-        document.getElementById('dictionarySelect').onchange = (e) => loadDictionary(e.target.value);
-        loadDictionary('default');
 
         // --- CANVAS SETUP ---
         function setupCanvas() {
