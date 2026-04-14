@@ -247,7 +247,9 @@
         import { converter, parse } from 'https://esm.sh/culori@3';
         import Stats from 'https://esm.sh/three@0.160.0/examples/jsm/libs/stats.module.js';
         import { ALL_COLORS, setupDictionarySelector } from './dictionary.js';
+
         let isInitialUniverseLoad = true;
+        let externalMarker = null; // Holds the "unnamed" color dot
 
     // SETUP STATS (Hidden by default)
     const stats = new Stats();
@@ -661,6 +663,11 @@ compassGroup.add(core);
                 const goToHex = urlParams.get('goto');
 
                 if (goToHex) {
+
+                    if (externalMarker) {
+                        scene.remove(externalMarker);
+                        externalMarker = null;
+                    }
                     // 1. Try to find it in the current list
                     const match = colorData.find(c => c.hex.toLowerCase() === goToHex.toLowerCase());
                     
@@ -677,6 +684,26 @@ compassGroup.add(core);
                             const x = lab.a * 3; 
                             const y = (lab.l - 50) * 3; 
                             const z = lab.b * 3; 
+
+                            const markerGroup = new THREE.Group();
+            
+                            const sphere = new THREE.Mesh(
+                                new THREE.SphereGeometry(3, 16, 16),
+                                new THREE.MeshBasicMaterial({ color: goToHex })
+                            );
+                            markerGroup.add(sphere);
+
+                            // Add a white "Target Ring" to make it easy to find
+                            const ring = new THREE.Mesh(
+                                new THREE.TorusGeometry(5, 0.5, 8, 32),
+                                new THREE.MeshBasicMaterial({ color: 0xffffff })
+                            );
+                            markerGroup.add(ring);
+
+                            markerGroup.position.set(x, y, z);
+                            scene.add(markerGroup);
+                            externalMarker = markerGroup;
+
                             camera.position.set(x, y, z + 45);
                             camera.lookAt(x, y, z);
                                 
