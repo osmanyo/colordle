@@ -32,7 +32,6 @@ const dropdownHTML = `
             <option value="mlmc_korean">Korean Colors</option>
         </optgroup>
         <optgroup label="Art & History">
-            // <option value="crayola">Crayola Crayons</option>
             <option value="osxcrayons">Apple Crayons</option>
             <option value="ral">RAL (Industrial)</option>
             <option value="sanzoWadaI">Sanzo Wada (Art)</option>

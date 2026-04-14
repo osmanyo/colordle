@@ -969,11 +969,22 @@
             }
         }
 
+        let initialDictionaryLoad = true;
+
         setupDictionarySelector('dictSelectorContainer', () => {
-            // This runs on page load AND every time you change the list
-            // It ensures the target color is picked from the NEW list immediately
+            // 1. If this is NOT the first time loading (meaning the user clicked the dropdown)
+            // then we clear the URL parameters.
+            if (!initialDictionaryLoad) {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+
+            // 2. Set flag to false so future changes trigger the URL reset
+            initialDictionaryLoad = false;
+
+            // 3. Start/Reload the game logic
             startColordle();
-        });       
+        });     
 
 
     
