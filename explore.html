@@ -284,7 +284,7 @@
         // --- RAYCASTER SETUP ---
         const raycaster = new THREE.Raycaster();
         const center = new THREE.Vector2(0, 0); // (0,0) is the center of the screen
-        raycaster.params.Points.threshold = 0.5; // How "thick" the laser is. Adjust this if selecting is too hard/easy.
+        raycaster.params.Points.threshold =  settings.pointSize / 2.5; // How "thick" the laser is. Adjust this if selecting is too hard/easy.
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
         
@@ -512,6 +512,9 @@ compassGroup.add(core);
 
         document.getElementById('sizeSlider').addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
+
+            settings.pointSize = val; 
+
             if(pointsMesh) pointsMesh.material.size = val;
             document.getElementById('sizeVal').innerText = val.toFixed(2);
             raycaster.params.Points.threshold = val / 2.5; 
@@ -689,8 +692,6 @@ compassGroup.add(core);
         setupDictionarySelector('dictSelectorContainer', () => {
             // This callback runs immediately, and also every time you change the dropdown
             refresh3DUniverse();
-            document.getElementById('sizeVal').innerText = 1.5
-            document.getElementById('sizeSlider').value = 1.5
         });
 
         // --- LABELS ---

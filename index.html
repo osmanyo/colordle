@@ -325,6 +325,52 @@
         </div>
     </div>
 
+    <!-- INFO ICON -->
+    <div id="infoIcon" title="How to Play" style="position: absolute; top: 20px; right: 140px; cursor: pointer; opacity: 0.7; z-index: 20;">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+    </div>
+
+    <!-- INFO MODAL -->
+<div id="infoModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; width: 420px; max-width: 95vw; max-height: 85vh; overflow-y: auto; z-index: 400; box-shadow: 0 12px 48px rgba(0,0,0,0.9); color: #eee; line-height: 1.6; font-family: sans-serif;">
+    <div id="closeInfo" style="position: absolute; top: 15px; right: 20px; cursor: pointer; color: #888; font-size: 24px;">✕</div>
+    
+    <h2 style="margin-top: 0; color: var(--accent-color); font-size: 22px; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid #333; padding-bottom: 10px;">Information</h2>
+    
+    <p style="font-size: 16px; font-weight: 500;">Guess the hidden color using its name or hex code. Matches are determined by visual perception distance in the CIELAB color space.</p>
+
+    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Hints</h3>
+    <p style="font-size: 15px; margin-top: 0;">
+        Hints unlock after you reach 50% of the global average tries for the current seed. If there are no global winners yet, hints unlock automatically after 50 attempts. Hints provide directions (Lighter/Darker, Redder/Greener, Yellower/Bluer) to guide your search.
+    </p>
+
+    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">3D Navigation</h3>
+    <p style="font-size: 15px; margin-top: 0;">
+        Click the 
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; display: inline-block; margin: 0 4px;"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+        icon on any guess to teleport to that specific color in the 3D universe. Use the HUD compass to navigate along the L, a, and b axes based on your hints.
+    </p>
+
+    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Color Name Picker</h3>
+    <p style="font-size: 15px; margin-top: 0;">
+        Use the picker tool to upload any image and identify the closest named color from your active dictionary. This is a separate utility provided for color identification and reference.
+    </p>
+
+    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Lists and Seeds</h3>
+    <p style="font-size: 15px; margin-top: 0;">
+        Switch between various color lists in the settings. Each list features a unique daily target and independent leaderboard. Changing the list automatically reloads the seed for that specific universe.
+    </p>
+
+    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Sharing</h3>
+    <p style="font-size: 15px; margin-top: 0;">
+        The share button generates a URL containing your current seed and active color list, allowing others to play the exact same challenge.
+    </p>
+</div>
+
+
     <!-- SETTINGS MODAL -->
     <div id="settingsModal">
         <div class="setting-row">
@@ -883,18 +929,26 @@
             });
         });
 
-        // // Check the URL for a ?seed= parameter when the page loads
-        // loadColors().then(() => {
-        //     const urlParams = new URLSearchParams(window.location.search);
-        //     const urlSeed = urlParams.get('seed');
-            
-        //     if (urlParams.has('seed') && !isNaN(parseInt(urlSeed))) {
-        //         initGame(parseInt(urlSeed));
-        //     } else {
-        //         initGame(); // Load the daily challenge by default
-        //     }
-        // });
+        // --- INFO MODAL LOGIC ---
+        const infoIcon = document.getElementById('infoIcon');
+        const infoModal = document.getElementById('infoModal');
+        const closeInfo = document.getElementById('closeInfo');
 
+        infoIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            infoModal.style.display = 'block';
+        });
+
+        closeInfo.addEventListener('click', () => {
+            infoModal.style.display = 'none';
+        });
+
+        // Close modal if user clicks outside of it
+        document.addEventListener('click', (e) => {
+            if (infoModal.style.display === 'block' && !infoModal.contains(e.target) && e.target !== infoIcon) {
+                infoModal.style.display = 'none';
+            }
+        });
 
         // This function handles starting the game
         function startColordle() {

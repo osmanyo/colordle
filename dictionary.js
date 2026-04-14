@@ -27,9 +27,12 @@ const dropdownHTML = `
             <option value="french">French Colors</option>
             <option value="spanish">Spanish Colors</option>
             <option value="german">German Colors</option>
+            <option value="mlmc_russian">Russian Colors</option>
+            <option value="hindi">Hindi Colors</option>
+            <option value="mlmc_korean">Korean Colors</option>
         </optgroup>
         <optgroup label="Art & History">
-            <option value="crayola">Crayola Crayons</option>
+            // <option value="crayola">Crayola Crayons</option>
             <option value="osxcrayons">Apple Crayons</option>
             <option value="ral">RAL (Industrial)</option>
             <option value="sanzoWadaI">Sanzo Wada (Art)</option>
