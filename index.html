@@ -198,13 +198,19 @@
         .guess-score { width: 60px; text-align: right; }
 
         /* --- SEED CONTROL --- */
-        #seedControl {
-            position: fixed; bottom: 20px; left: 20px;
-            background: #1a1a1a; padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px; display: flex; gap: 5px;
-            align-items: center; z-index: 200;
+        #seedControl, #dictControl {
+            position: fixed;
+            bottom: 20px;
+            background: #1a1a1a;
+            padding: 10px;
+            border: 1px solid #3a3a3c;
+            border-radius: 6px;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            z-index: 200;
         }
+
         #seedControl span { font-size: 12px; color: #aaa; margin-right: 5px; }
         #seedInput {
             width: 80px; padding: 5px; font-size: 13px; height: auto;
@@ -216,8 +222,21 @@
         }
         #seedBtn:hover { background: #666; }
 
+        #dictSelectorContainer select {
+            background: transparent;
+            color: white;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            font-size: 12px;
+            color-scheme: dark;
+        }       
 
-                .top-nav-links {
+        #seedControl { left: 20px; }
+        #dictControl { right: 20px; }
+
+
+        .top-nav-links {
             position: absolute;
             top: 20px;
             left: 20px;
@@ -377,7 +396,10 @@
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
         </button>
 
-        <div id="dictSelectorContainer" ></div>
+    </div>
+
+    <div id="dictControl">
+        <div id="dictSelectorContainer"></div>
     </div>
 
     <script type="module">
