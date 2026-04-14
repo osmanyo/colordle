@@ -22,6 +22,7 @@ const dropdownHTML = `
             <!-- <option value="turkish_colors.csv">Türkçe (Wikipedia)</option>  -->
             <!-- <option value="turkce2.csv">Türkçe 2</option>  -->
             <option value="turkish_combined.csv">Türkçe Kombine</option> 
+            <option value="mlmc_persian">Persian Colors</option>
             <option value="japaneseTraditional">Japanese Traditional</option>
             <option value="chineseTraditional">Chinese Traditional</option>
             <option value="french">French Colors</option>
