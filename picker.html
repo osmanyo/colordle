@@ -61,7 +61,7 @@
         }
         img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        #emptyState { position: absolute; color: #666; text-align: center; pointer-events: none; }
+        #emptyState { position: absolute; color: #666; text-align: center; pointer-events: none; display: none;}
 
         /* --- FLOATING RESULT BOX --- */
         #resultBox { 
@@ -173,7 +173,7 @@
         }
 
         if (displayImg.complete) setupCanvas();
-        else displayImg.onload = setupCanresvas;
+        else displayImg.onload = setupCanvas;
 
         document.getElementById('fileInput').onchange = (e) => {
             const file = e.target.files[0];
