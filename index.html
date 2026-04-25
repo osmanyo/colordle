@@ -871,12 +871,20 @@
             const val = e.target.value.trim().toLowerCase();
             suggestions.innerHTML = '';
             
-            let validColor = parse(val);
-            if(!validColor && val.length > 1) {
-                const found = ALL_COLORS.find(c => c.name.toLowerCase() === val);
-                if(found) validColor = found.hex;
+            let validColor = null;
+            
+            // 1. Check your custom dictionary FIRST
+            const exactMatch = ALL_COLORS.find(c => c.name.toLowerCase() === val);
+            
+            if (exactMatch) {
+                validColor = exactMatch.hex;
+            } 
+            // 2. If not in list, fallback to hex parser
+            else if (parse(val)) {
+                validColor = val;
             }
-            previewEl.style.backgroundColor = validColor ? (typeof validColor === 'string' ? validColor : val) : 'transparent';
+
+            previewEl.style.backgroundColor = validColor ? validColor : 'transparent';
 
             if (val.length < 2 || val.startsWith('#')) { 
                 suggestions.style.display = 'none'; 
