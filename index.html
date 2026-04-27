@@ -360,40 +360,52 @@
     </div>
 
     <!-- INFO MODAL -->
-<div id="infoModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; width: 420px; max-width: 95vw; max-height: 85vh; overflow-y: auto; z-index: 400; box-shadow: 0 12px 48px rgba(0,0,0,0.9); color: #eee; line-height: 1.6; font-family: sans-serif;">
-    <div id="closeInfo" style="position: absolute; top: 15px; right: 20px; cursor: pointer; color: #888; font-size: 24px;">✕</div>
-    
-    <h2 style="margin-top: 0; color: var(--accent-color); font-size: 22px; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid #333; padding-bottom: 10px;">Information</h2>
-    
-    <p style="font-size: 16px; font-weight: 500;">Guess the hidden color using its name or hex code. Matches are determined by visual perception distance in the CIELAB color space.</p>
+    <div id="infoModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; width: 420px; max-width: 95vw; max-height: 85vh; overflow-y: auto; z-index: 400; box-shadow: 0 12px 48px rgba(0,0,0,0.9); color: #eee; line-height: 1.6; font-family: sans-serif;">
+        <div id="closeInfo" style="position: absolute; top: 15px; right: 20px; cursor: pointer; color: #888; font-size: 24px;">✕</div>
+        
+        <h2 style="margin-top: 0; color: var(--accent-color); font-size: 22px; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid #333; padding-bottom: 10px;">Information</h2>
+        
+        <p style="font-size: 16px; font-weight: 500;">Guess the hidden color using its name or hex code. Matches are determined by visual perception distance in the CIELAB color space.</p>
 
-    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Hints</h3>
-    <p style="font-size: 15px; margin-top: 0;">
-        Hints unlock after you reach 50% of the global average tries for the current seed. If there are no global winners yet, hints unlock automatically after 50 attempts. Hints provide directions (Lighter/Darker, Redder/Greener, Yellower/Bluer) to guide your search.
-    </p>
+        <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Hints</h3>
+        <p style="font-size: 15px; margin-top: 0;">
+            Hints unlock after you reach 50% of the global average tries for the current seed. If there are no global winners yet, hints unlock automatically after 50 attempts. Hints provide directions (Lighter/Darker, Redder/Greener, Yellower/Bluer) to guide your search.
+        </p>
 
-    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">3D Navigation</h3>
-    <p style="font-size: 15px; margin-top: 0;">
-        Click the 
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; display: inline-block; margin: 0 4px;"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
-        icon on any guess to teleport to that specific color in the 3D universe. Use the HUD compass to navigate along the L, a, and b axes based on your hints.
-    </p>
+        <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">3D Navigation</h3>
+        <p style="font-size: 15px; margin-top: 0;">
+            Click the 
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; display: inline-block; margin: 0 4px;"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+            icon on any guess to teleport to that specific color in the 3D universe. Use the HUD compass to navigate along the L, a, and b axes based on your hints.
+        </p>
 
-    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Color Name Picker</h3>
-    <p style="font-size: 15px; margin-top: 0;">
-        Use the picker tool to upload any image and identify the closest named color from your active dictionary. This is a separate utility provided for color identification and reference.
-    </p>
+        <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Color Name Picker</h3>
+        <p style="font-size: 15px; margin-top: 0;">
+            Use the picker tool to upload any image and identify the closest named color from your active dictionary. This is a separate utility provided for color identification and reference.
+        </p>
 
-    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Lists and Seeds</h3>
-    <p style="font-size: 15px; margin-top: 0;">
-        Switch between various color lists in the settings. Each list features a unique daily target and independent leaderboard. Changing the list automatically reloads the seed for that specific universe.
-    </p>
+        <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Lists and Seeds</h3>
+        <p style="font-size: 15px; margin-top: 0;">
+            Switch between various color lists in the settings. Each list features a unique daily target and independent leaderboard. Changing the list automatically reloads the seed for that specific universe.
+        </p>
 
-    <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Sharing</h3>
-    <p style="font-size: 15px; margin-top: 0;">
-        The share button generates a URL containing your current seed and active color list, allowing others to play the exact same challenge.
-    </p>
-</div>
+        <h3 style="font-size: 17px; margin: 20px 0 8px 0; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;">Sharing</h3>
+        <p style="font-size: 15px; margin-top: 0;">
+            The share button generates a URL containing your current seed and active color list, allowing others to play the exact same challenge.
+        </p>
+    </div>
+
+        
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; width: 380px; max-width: 95vw; max-height: 80vh; overflow-y: auto; z-index: 400; box-shadow: 0 12px 48px rgba(0,0,0,0.9); color: #eee; font-family: sans-serif;">
+        <div id="closeHistory" style="position: absolute; top: 15px; right: 20px; cursor: pointer; color: #888; font-size: 24px;">✕</div>
+        <h2 style="margin-top: 0; color: var(--accent-color); font-size: 20px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 10px;">Saved Games</h2>
+        
+        <div id="savedGamesList" style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
+            <!-- History items will be injected here -->
+        </div>
+    </div>
 
 
     <!-- SETTINGS MODAL -->
@@ -435,6 +447,16 @@
             <div><span class="stat-val" id="statWinners">0</span>Winners</div>
             <div><span class="stat-val" id="statAvg">0</span>Avg Tries</div>
             <div><span class="stat-val" id="statRank">--</span>Your Rank</div>
+
+            <div style="display: flex; align-items: center; justify-content: center; padding-left: 10px; border-left: 1px solid #333;">
+                <button id="openHistoryBtn" style="background: transparent; border: none; cursor: pointer; padding: 5px; opacity: 0.8;" title="View Your History">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                </button>
+            </div>
         </div>  
 
         <div id="historyList" class="guess-history"></div>
@@ -945,7 +967,7 @@
 
         // --- RANDOM & SHARE BUTTONS ---
         document.getElementById('randomBtn').addEventListener('click', () => {
-            const randomSeed = Math.floor(Math.random() * 999999);
+            const randomSeed = Math.floor(Math.random() * 99999);
             window.location.href = `?seed=${randomSeed}`;
         });
 
@@ -1135,6 +1157,108 @@
 
         // Call the function
         checkSystemUpdates();   
+
+
+        // Past games
+        // --- READ EXISTING SAVES LOGIC ---
+        const historyModal = document.getElementById('historyModal');
+        const openHistoryBtn = document.getElementById('openHistoryBtn');
+        const closeHistory = document.getElementById('closeHistory');
+
+        function loadSavedGames() {
+            const container = document.getElementById('savedGamesList');
+            container.innerHTML = '';
+            
+            let savedGames = [];
+
+            // 1. Loop through everything in localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                
+                // 2. Find keys that are Colordle saves
+                if (key.startsWith('colordle_save_')) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        if (data && data.guesses && data.guesses.length > 0) {
+                            
+                            // Extract List Name and Seed from the key string
+                            // Format: colordle_save_listName.csv_12345
+                            const prefixRemoved = key.replace('colordle_save_', '');
+                            const lastUnderscore = prefixRemoved.lastIndexOf('_');
+                            const listName = prefixRemoved.substring(0, lastUnderscore);
+                            const seedStr = prefixRemoved.substring(lastUnderscore + 1);
+
+                            savedGames.push({
+                                list: listName,
+                                seed: parseInt(seedStr),
+                                won: data.won,
+                                tries: data.guesses.length,
+                                lastGuess: data.guesses[data.guesses.length - 1] // Get their most recent color guess
+                            });
+                        }
+                    } catch (e) { console.error("Error reading save:", e); }
+                }
+            }
+
+            // 3. Sort them by Seed (Newest days first)
+            savedGames.sort((a, b) => b.seed - a.seed);
+
+            if (savedGames.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#888; padding: 20px;">No saved games found.</div>';
+                return;
+            }
+
+            // 4. Build the UI for each save
+            savedGames.forEach(game => {
+                const row = document.createElement('div');
+                row.style.cssText = 'background: #222; border: 1px solid #333; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s;';
+                row.onmouseover = () => row.style.background = '#333';
+                row.onmouseout = () => row.style.background = '#222';
+                
+                // Make the row clickable! It loads that specific list and seed.
+                row.onclick = () => {
+                    window.location.href = `?seed=${game.seed}&list=${game.list}`;
+                };
+
+                let listDisplay = game.list === 'default' || game.list === 'colornames.csv' ? 'Full List' : game.list.replace('.csv', '');
+                let statusColor = game.won ? '#4ade80' : '#aaa'; // Green if won, grey if in progress
+                let statusText = game.won ? 'WON' : 'PLAYING';
+
+                row.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; background: ${game.lastGuess.hex}; border: 1px solid rgba(255,255,255,0.2);"></div>
+                            Seed ${game.seed}
+                        </div>
+                        <div style="font-size: 11px; color: #888;">
+                            ${listDisplay}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 16px; font-weight: bold; color: ${statusColor};">${game.tries} <span style="font-size: 10px;">Tries</span></div>
+                        <div style="font-size: 10px; color: ${statusColor}; text-transform: uppercase; margin-top:2px;">${statusText}</div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // --- EVENTS ---
+        openHistoryBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            loadSavedGames(); // Read memory right before opening
+            historyModal.style.display = 'block';
+        });
+
+        closeHistory.addEventListener('click', () => {
+            historyModal.style.display = 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (historyModal.style.display === 'block' && !historyModal.contains(e.target) && e.target !== openHistoryBtn) {
+                historyModal.style.display = 'none';
+            }
+        });
 
     </script>
 </body>
