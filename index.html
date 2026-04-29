@@ -530,6 +530,7 @@
         let targetLab = null;
         let currentSeed = null;
         let unsubscribeStats = null;
+        let currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
 
         // Preferences
         let maxSuggestions = 1;
@@ -554,7 +555,7 @@
             document.getElementById('seedInput').value = currentSeed;
 
             // UNIQUE KEY: e.g., colordle_save_xkcd_20557
-            const currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
+
             const saveKey = `colordle_save_${currentList}_${currentSeed}`;
             
             const savedData = localStorage.getItem(saveKey);
@@ -669,7 +670,7 @@
         }
 
         function saveGame() {
-            const currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
+
             const saveKey = `colordle_save_${currentList}_${currentSeed}`;
             localStorage.setItem(saveKey, JSON.stringify(gameState));
         }
@@ -973,7 +974,7 @@
 
         document.getElementById('shareBtn').addEventListener('click', () => {
             // Generate link with the current seed
-            const currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
+
             const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&list=${currentList}`;
             
             navigator.clipboard.writeText(shareUrl).then(() => {
@@ -1017,11 +1018,14 @@
             const urlSeed = urlParams.get('seed');
             const urlList = urlParams.get('list');
 
+
             if (urlList) {
                 localStorage.setItem('colordle_list', urlList);
                 const selector = document.getElementById('dictionarySelect');
                 if (selector) selector.value = urlList;
             }
+
+            currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
 
             if (urlSeed !== null && !isNaN(parseInt(urlSeed))) {
                 initGame(parseInt(urlSeed));
@@ -1084,10 +1088,10 @@
             submitFeedbackBtn.disabled = true;
             
             try {
-                // We use Date.now() to generate a unique ID for each feedback message
+                let currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
                 await setDoc(doc(db, "feedback", Date.now().toString()), {
                     message: text,
-                    seed: currentSeed, // Good to know which color they are playing
+                    seed: `${currentList}_${currentSeed}`, 
                     timestamp: new Date().toISOString()
                 });
                 
@@ -1119,7 +1123,7 @@
 
         // Helper to get the correct Firebase document reference
         function getStatsRef() {
-            const currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
+
             return doc(db, "dailyStats", currentList + "_" + currentSeed.toString());
         }
 
