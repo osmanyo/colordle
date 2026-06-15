@@ -340,10 +340,20 @@
         </svg>
     </div>
 
-    <!-- FEEDBACK MODAL -->
+   <!-- FEEDBACK MODAL -->
     <div id="feedbackModal">
-        <h3 style="margin-top:0; font-size:16px;">Send Feedback</h3>
+        <h3 style="margin-top:0; margin-bottom:5px; font-size:16px;">Send Feedback</h3>
+        
+        <!-- Simplified Notice -->
+        <p style="font-size: 11px; color: #888; margin-top: 0; margin-bottom: 12px; line-height: 1.4; text-align: left;">
+            If you want a reply, please leave your email below or reach me directly at 
+            <a href="mailto:osmyo83@gmail.com" style="color: var(--accent-color); text-decoration: none; font-weight: bold;">osmyo83@gmail.com</a>.
+        </p>
+        
         <textarea id="feedbackText" placeholder="Found a bug? Have an idea? Let me know!"></textarea>
+        
+        <input type="email" id="feedbackEmail" placeholder="Email (optional)" style="width:100%; margin-bottom:15px; background:#000; color:white; border:1px solid #333; padding:8px; border-radius:4px; box-sizing:border-box; font-size:12px;">
+
         <div style="display: flex; gap: 10px;">
             <button id="closeFeedbackBtn" style="flex: 1; background: #333; color: white;">Cancel</button>
             <button id="submitFeedbackBtn" style="flex: 1; background: var(--accent-color); color: black;">Send</button>
@@ -1091,6 +1101,8 @@
                 let currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
                 await setDoc(doc(db, "feedback", Date.now().toString()), {
                     message: text,
+                    email: document.getElementById('feedbackEmail').value || "none", 
+                    device: navigator.userAgent,
                     seed: `${currentList}_${currentSeed}`, 
                     timestamp: new Date().toISOString()
                 });
