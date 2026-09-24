@@ -1,6 +1,6 @@
 # Colordle
 
-Daily Colordle game with an adjustable seed. https://osmanyo.github.io/colordle/
+Daily Colordle game with an adjustable seed. https://colordle.org/
 
 Guess the color by color names or hex codes. The percentage shows how close you are to the hidden color.
 

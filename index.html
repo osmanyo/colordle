@@ -32,10 +32,10 @@
     
     <meta property="og:title" content="Colordle - Guess the Daily Color">
     <meta property="og:description" content="Can you guess today's color?">
-    <meta property="og:url" content="https://osmanyo.github.io/colordle/">
+    <meta property="og:url" content="https://colordle.org/">
     <meta property="og:type" content="website">
     
-    <link rel="canonical" href="https://osmanyo.github.io/colordle/" />
+    <link rel="canonical" href="https://colordle.org/" />
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Animated Rainbow C Icon -->
@@ -1149,7 +1149,7 @@
 
         document.getElementById('homeBtn').addEventListener('click', () => {
             // 1. Remove the ?seed= parameter from the URL
-            // This makes the URL clean again: https://osmanyo.github.io/colordle/
+            // This makes the URL clean again: https://colordle.org/
             const cleanUrl = window.location.origin + window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
 
