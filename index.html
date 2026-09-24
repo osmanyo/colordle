@@ -2,6 +2,17 @@
 <html lang="en">
 <head>
 
+<script>
+/* Colordle migration: move a "#migrate=..." payload out of the URL before analytics can see it. */
+(function () {
+    var h = location.hash;
+    if (h.indexOf('#migrate=') === 0) {
+        window.__colordleMigrate = h.slice(9);
+        history.replaceState(null, '', location.pathname + location.search);
+    }
+})();
+</script>
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-H57NFG20DE"></script>
 <script>
@@ -415,6 +426,14 @@
         <div id="savedGamesList" style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
             <!-- History items will be injected here -->
         </div>
+
+        <div style="margin-top: 18px; border-top: 1px solid #333; padding-top: 14px; font-size: 12px; color: #aaa;">
+            <div style="font-weight: bold; color: #ddd; margin-bottom: 6px;">Backup / move to another device</div>
+            <button id="copyBackupBtn" type="button" style="background: transparent; color: #ddd; border: 1px solid #555; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 12px;">Copy backup code</button>
+            <textarea id="restoreBox" rows="3" placeholder="Paste a backup code here to restore" style="width: 100%; box-sizing: border-box; margin-top: 10px; background: #000; color: #fff; border: 1px solid #333; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 11px; resize: none;"></textarea>
+            <button id="restoreBtn" type="button" style="margin-top: 6px; background: #00d2ff; color: #000; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: bold;">Restore</button>
+            <div id="backupMsg" style="margin-top: 8px; min-height: 14px;"></div>
+        </div>
     </div>
 
 
@@ -514,7 +533,11 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, updateDoc, increment, onSnapshot, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
-        import { ALL_COLORS, setupDictionarySelector } from './dictionary.js';
+        import { ALL_COLORS, setupDictionarySelector, isKnownList } from './dictionary.js';
+        import { handleMigrationHash, showMigrationBannerIfNeeded, initBackupUI } from './migration.js';
+
+        // Bring over saved games from the old address (must run before anything reads localStorage)
+        handleMigrationHash();
         
         // 2. INITIALIZE FIREBASE HERE
         const firebaseConfig = {
@@ -1029,7 +1052,7 @@
             const urlList = urlParams.get('list');
 
 
-            if (urlList) {
+            if (urlList && isKnownList(urlList)) {
                 localStorage.setItem('colordle_list', urlList);
                 const selector = document.getElementById('dictionarySelect');
                 if (selector) selector.value = urlList;
@@ -1275,6 +1298,10 @@
                 historyModal.style.display = 'none';
             }
         });
+
+
+        initBackupUI();
+        showMigrationBannerIfNeeded();
 
     </script>
 </body>

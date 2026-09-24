@@ -1,6 +1,17 @@
 // dictionary.js
 export let ALL_COLORS =[];
 
+// Lists offered in the dropdown below. Anything else (for example from a crafted
+// ?list= link or a tampered save) is ignored, so it can never be fetched or rendered.
+export const KNOWN_LISTS = [
+    'colornames.csv', 'bestOf', 'wikipedia', 'xkcd',
+    'html', 'basic', 'ntc', 'x11', 'windows',
+    'turkish_combined.csv', 'mlmc_persian', 'japaneseTraditional', 'chineseTraditional',
+    'french', 'spanish', 'german', 'mlmc_russian', 'hindi', 'mlmc_korean',
+    'osxcrayons', 'ral', 'sanzoWadaI', 'werner', 'ridgway', 'leCorbusier'
+];
+export function isKnownList(name) { return KNOWN_LISTS.includes(name); }
+
 // The HTML for the dropdown menu
 const dropdownHTML = `
     <span style="font-size: 11px; color: #666; margin-right: 5px;">List:</span>
@@ -53,7 +64,8 @@ export function setupDictionarySelector(containerId, onColorsLoadedCallback) {
     container.innerHTML = dropdownHTML;
 
     // 2. See what list we used last time (default to 30k list)
-    const savedList = localStorage.getItem('colordle_list') || 'colornames.csv';
+    const storedList = localStorage.getItem('colordle_list');
+    const savedList = isKnownList(storedList) ? storedList : 'colornames.csv';
     document.getElementById('dictionarySelect').value = savedList;
 
     // 3. Listen for changes
