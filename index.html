@@ -32,10 +32,10 @@
     
     <meta property="og:title" content="Colordle - Guess the Daily Color">
     <meta property="og:description" content="Can you guess today's color?">
-    <meta property="og:url" content="https://osmanyo.github.io/colordle/">
+    <meta property="og:url" content="https://colordle.org/">
     <meta property="og:type" content="website">
     
-    <link rel="canonical" href="https://osmanyo.github.io/colordle/" />
+    <link rel="canonical" href="https://colordle.org/" />
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Animated Rainbow C Icon -->
@@ -558,6 +558,11 @@
         const calcDeltaE = differenceCiede2000();
 
         
+        // Set this to the epoch-day your first puzzle went live (Math.floor(launchDateMs/86400000)),
+        // so "Random" can't land on a day before the game existed. 0 = no lower limit.
+        const LAUNCH_SEED = 0;
+        function todaySeed() { return Math.floor(Date.now() / 86400000); }
+
         let guessCount = 0;
         let targetColor = null;
         let targetLab = null;
@@ -584,7 +589,9 @@
             document.getElementById('guessInput').value = '';
             document.getElementById('inputPreview').style.backgroundColor = 'transparent';
 
-            currentSeed = customSeed !== null ? customSeed : Math.floor(Date.now() / 86400000);
+            const today = todaySeed();
+            // No future puzzles: clamp any requested seed (URL, manual entry, saved link) to today or earlier.
+            currentSeed = customSeed !== null ? Math.min(customSeed, today) : today;
             document.getElementById('seedInput').value = currentSeed;
 
             // UNIQUE KEY: e.g., colordle_save_xkcd_20557
@@ -1001,7 +1008,12 @@
 
         // --- RANDOM & SHARE BUTTONS ---
         document.getElementById('randomBtn').addEventListener('click', () => {
-            const randomSeed = Math.floor(Math.random() * 99999);
+            const today = todaySeed();
+            // Only past days that have actually been playable: [LAUNCH_SEED, today - 1].
+            const rangeStart = Math.min(LAUNCH_SEED, today - 1);
+            const rangeEnd = today - 1; // exclude today itself: that's "today's puzzle", not a random past one
+            if (rangeEnd < rangeStart) return; // no past days yet (e.g. launch day itself)
+            const randomSeed = rangeStart + Math.floor(Math.random() * (rangeEnd - rangeStart + 1));
             window.location.href = `?seed=${randomSeed}`;
         });
 
@@ -1149,7 +1161,7 @@
 
         document.getElementById('homeBtn').addEventListener('click', () => {
             // 1. Remove the ?seed= parameter from the URL
-            // This makes the URL clean again: https://osmanyo.github.io/colordle/
+            // This makes the URL clean again: https://colordle.org/
             const cleanUrl = window.location.origin + window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
 
