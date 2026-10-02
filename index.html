@@ -222,6 +222,30 @@
             z-index: 200;
         }
 
+        #seedMessage {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a2a2a;
+            border: 1px solid #f0a020;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #f0a020;
+            white-space: nowrap;
+            z-index: 201;
+        }
+        #seedMessage::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #f0a020;
+        }
+
         #seedControl span { font-size: 12px; color: #aaa; margin-right: 5px; }
         #seedInput {
             width: 80px; padding: 5px; font-size: 13px; height: auto;
@@ -500,7 +524,7 @@
         </button>
         <span>Seed:</span>
         <input type="number" id="seedInput" value="">
-        <div id="seedMessage" style="display:none; font-size:11px; color:#f0a020; margin-top:4px; text-align:center;"></div>
+        <div id="seedMessage" style="display:none;"></div>
         <button id="seedBtn">Load</button>
         
         <!-- Separator -->
@@ -782,7 +806,7 @@
                     
                     ${hintButtonHTML}
 
-                    <a href="explore.html?goto=${encodeURIComponent(g.hex)}" 
+                    <a href="explore.html?goto=${encodeURIComponent(g.hex)}&seed=${currentSeed}&list=${currentList}" 
                        style="background:rgba(255,255,255,0.2); border-radius:4px; padding:4px; display:flex; align-items:center; color:inherit; text-decoration:none;">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
                     </a>
@@ -803,8 +827,47 @@
                 <h2>🎉 YOU WON!</h2>
                 <p>The color was <b>${targetColor.name}</b></p>
                 <div style="margin:10px auto; width:100px; height:40px; background:${targetColor.hex}; border:2px solid #555; border-radius:4px;"></div>
+                <button id="resultShareBtn" style="margin-top:8px; background:rgba(255,255,255,0.15); border:none; border-radius:6px; padding:8px 14px; color:inherit; font-weight:bold; cursor:pointer;">
+                    📤 Share Result
+                </button>
             `;
+            document.getElementById('resultShareBtn').addEventListener('click', (e) => shareResult(e.currentTarget));
             if(animate) window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Score -> emoji tier, mirrors the color bands players already see per guess.
+        function scoreEmoji(score) {
+            if (score >= 100) return '🟩';
+            if (score >= 90) return '🟨';
+            if (score >= 70) return '🟧';
+            return '🟥';
+        }
+
+        function buildShareText() {
+            const bar = gameState.guesses.map(g => scoreEmoji(g.score)).join('');
+            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&list=${currentList}`;
+            const rankText = document.getElementById('statRank').innerText; // already live via syncStats
+            return `Colordle #${currentSeed} — ${gameState.guesses.length} ${gameState.guesses.length === 1 ? 'try' : 'tries'} 🎉\n${bar}\nRank ${rankText}\n${shareUrl}`;
+        }
+
+        const CHECK_ICON = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+        // Shared by both the header link-share button (icon-only) and the win-screen result-share button (icon+label).
+        function copyWithFeedback(text, btn, feedbackHTML = CHECK_ICON) {
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.innerHTML;
+                btn.innerHTML = feedbackHTML;
+                setTimeout(() => { btn.innerHTML = original; }, 2000);
+            });
+        }
+
+        function shareResult(btn) {
+            const text = buildShareText();
+            if (navigator.share) {
+                navigator.share({ text }).catch(() => {}); // user-cancelled share sheet is not an error
+            } else {
+                copyWithFeedback(text, btn, `${CHECK_ICON} Copied!`);
+            }
         }
 
         
@@ -1025,23 +1088,10 @@
             window.location.href = `?seed=${randomSeed}`;
         });
 
-        document.getElementById('shareBtn').addEventListener('click', () => {
+        document.getElementById('shareBtn').addEventListener('click', (e) => {
             // Generate link with the current seed
-
             const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&list=${currentList}`;
-            
-            navigator.clipboard.writeText(shareUrl).then(() => {
-                const btn = document.getElementById('shareBtn');
-                const originalIcon = btn.innerHTML;
-                
-                // Switch to a green Checkmark icon
-                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                
-                // Change back after 2 seconds
-                setTimeout(() => {
-                    btn.innerHTML = originalIcon;
-                }, 2000);
-            });
+            copyWithFeedback(shareUrl, e.currentTarget);
         });
 
         // --- INFO MODAL LOGIC ---
