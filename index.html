@@ -336,6 +336,11 @@
                 width: 90%;
                 justify-content: center;
             }
+
+            /* The top-left/top-right icon rows (.top-nav-links, info/feedback/settings) float at top:20px.
+               On narrow screens the centered title spans wide enough to sit under them — push it below
+               that whole row instead of chasing each icon's position individually. */
+            h1 { margin-top: 70px; }
         }
     </style>
 </head>
@@ -522,7 +527,7 @@
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
         </button>
-        <span>Seed:</span>
+        <span>Day:</span>
         <input type="number" id="seedInput" value="">
         <div id="seedMessage" style="display:none;"></div>
         <button id="seedBtn">Load</button>
@@ -585,6 +590,13 @@
         
         function todaySeed() { return Math.floor(Date.now() / 86400000); }
 
+        // Display only — never used for color generation, save keys, or the future-seed clamp.
+        // April 23, 2026 (the alphabetical-order bug fix, after which colors are correctly
+        // reproducible and stats exist) is shown to players as "Day 1".
+        const LAUNCH_SEED = 20566;
+        function seedToDay(seed) { return seed - LAUNCH_SEED + 1; }
+        function dayToSeed(day) { return day + LAUNCH_SEED - 1; }
+
         let guessCount = 0;
         let targetColor = null;
         let targetLab = null;
@@ -621,7 +633,7 @@
 
             // No future puzzles: clamp to today or earlier.
             currentSeed = customSeed !== null ? customSeed : today;
-            document.getElementById('seedInput').value = currentSeed;
+            document.getElementById('seedInput').value = seedToDay(currentSeed);
 
             const seedMsgEl = document.getElementById('seedMessage');
             if (seedMsgEl) {
@@ -835,41 +847,6 @@
             if(animate) window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Score -> emoji tier, mirrors the color bands players already see per guess.
-        function scoreEmoji(score) {
-            if (score >= 100) return '🟩';
-            if (score >= 90) return '🟨';
-            if (score >= 70) return '🟧';
-            return '🟥';
-        }
-
-        function buildShareText() {
-            const bar = gameState.guesses.map(g => scoreEmoji(g.score)).join('');
-            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&list=${currentList}`;
-            const rankText = document.getElementById('statRank').innerText; // already live via syncStats
-            return `Colordle #${currentSeed} — ${gameState.guesses.length} ${gameState.guesses.length === 1 ? 'try' : 'tries'} 🎉\n${bar}\nRank ${rankText}\n${shareUrl}`;
-        }
-
-        const CHECK_ICON = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-
-        // Shared by both the header link-share button (icon-only) and the win-screen result-share button (icon+label).
-        function copyWithFeedback(text, btn, feedbackHTML = CHECK_ICON) {
-            navigator.clipboard.writeText(text).then(() => {
-                const original = btn.innerHTML;
-                btn.innerHTML = feedbackHTML;
-                setTimeout(() => { btn.innerHTML = original; }, 2000);
-            });
-        }
-
-        function shareResult(btn) {
-            const text = buildShareText();
-            if (navigator.share) {
-                navigator.share({ text }).catch(() => {}); // user-cancelled share sheet is not an error
-            } else {
-                copyWithFeedback(text, btn, `${CHECK_ICON} Copied!`);
-            }
-        }
-
         
         let globalAvgTries = null;
         let globalWinners = 0;
@@ -1076,8 +1053,8 @@
         document.getElementById('guessBtn').addEventListener('click', handleGuess);
         
         document.getElementById('seedBtn').addEventListener('click', () => {
-            const val = parseInt(document.getElementById('seedInput').value);
-            if(!isNaN(val)) initGame(val);
+            const day = parseInt(document.getElementById('seedInput').value);
+            if(!isNaN(day)) initGame(dayToSeed(day));
         });
 
         // --- RANDOM & SHARE BUTTONS ---
