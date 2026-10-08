@@ -1105,8 +1105,10 @@
         // --- RANDOM & SHARE BUTTONS ---
         document.getElementById('randomBtn').addEventListener('click', () => {
             const today = todaySeed();
+            const rangeStart = LAUNCH_SEED; // Day 1 — nothing before this is a real puzzle
             const rangeEnd = today - 1; // exclude today itself: that's "today's puzzle", not a random past one
-            const randomSeed = Math.floor(Math.random() * (rangeEnd + 1));
+            if (rangeEnd < rangeStart) return; // no past days yet (e.g. on launch day itself)
+            const randomSeed = rangeStart + Math.floor(Math.random() * (rangeEnd - rangeStart + 1));
             window.location.href = `?seed=${randomSeed}`;
         });
 
