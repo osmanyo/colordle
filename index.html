@@ -250,6 +250,7 @@
         #seedInput {
             width: 80px; padding: 5px; font-size: 13px; height: auto;
             text-align: center; background: #000; border: 1px solid #333; color:white;
+            color-scheme: dark; /* makes native spinner arrows render visibly on this dark background */
         }
         #seedBtn {
             padding: 5px 10px; font-size: 13px; height: auto;
@@ -528,7 +529,7 @@
                 </svg>
         </button>
         <span>Day:</span>
-        <input type="number" id="seedInput" value="">
+        <input type="number" id="seedInput" value="" min="1">
         <div id="seedMessage" style="display:none;"></div>
         <button id="seedBtn">Load</button>
         
@@ -629,9 +630,12 @@
             if (customSeed !== null && customSeed > today) {
                 seedMessage = "You can't load a future puzzle — showing today's instead.";
                 customSeed = today;
+            } else if (customSeed !== null && customSeed < LAUNCH_SEED) {
+                seedMessage = "Day 1 is the earliest — showing Day 1 instead.";
+                customSeed = LAUNCH_SEED;
             }
 
-            // No future puzzles: clamp to today or earlier.
+            // No future puzzles, nothing before Day 1: clamp to [LAUNCH_SEED, today].
             currentSeed = customSeed !== null ? customSeed : today;
             document.getElementById('seedInput').value = seedToDay(currentSeed);
 
@@ -845,6 +849,47 @@
             `;
             document.getElementById('resultShareBtn').addEventListener('click', (e) => shareResult(e.currentTarget));
             if(animate) window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Score -> emoji tier, mirrors the color bands players already see per guess.
+        function scoreEmoji(score) {
+            if (score >= 100) return '🟩';
+            if (score >= 90) return '🟨';
+            if (score >= 70) return '🟧';
+            return '🟥';
+        }
+
+        const SHARE_BAR_CAP = 15; // beyond this many tries, show first/last + a count instead of one square per guess
+
+        function buildShareText() {
+            const guesses = gameState.guesses;
+            let bar;
+            if (guesses.length <= SHARE_BAR_CAP) {
+                bar = guesses.map(g => scoreEmoji(g.score)).join('');
+            } else {
+                const head = guesses.slice(0, 6).map(g => scoreEmoji(g.score)).join('');
+                const tail = guesses.slice(-3).map(g => scoreEmoji(g.score)).join('');
+                bar = `${head}···(${guesses.length - 9} more)···${tail}`;
+            }
+            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&list=${currentList}`;
+            const rankText = document.getElementById('statRank').innerText; // already live via syncStats
+            return `Colordle Day ${seedToDay(currentSeed)} — ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'} 🎉\n${bar}\nRank ${rankText}\n${shareUrl}`;
+        }
+
+        const CHECK_ICON = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+        // Shared by both the header link-share button (icon-only) and the win-screen result-share button (icon+label).
+        function copyWithFeedback(text, btn, feedbackHTML = CHECK_ICON) {
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.innerHTML;
+                btn.innerHTML = feedbackHTML;
+                setTimeout(() => { btn.innerHTML = original; }, 2000);
+            });
+        }
+
+        // Dual-mode: image+text via the native share sheet where supported, text-only (clipboard) everywhere else.
+        function shareResult(btn) {
+            copyWithFeedback(buildShareText(), btn, `${CHECK_ICON} Copied!`);
         }
 
         
@@ -1314,7 +1359,7 @@
                     <div style="display: flex; flex-direction: column; gap: 4px;">
                         <div style="font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 6px;">
                             <div style="width: 12px; height: 12px; border-radius: 50%; background: ${game.lastGuess.hex}; border: 1px solid rgba(255,255,255,0.2);"></div>
-                            Seed ${game.seed}
+                            Day ${seedToDay(game.seed)}
                         </div>
                         <div style="font-size: 11px; color: #888;">
                             ${listDisplay}
