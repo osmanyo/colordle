@@ -871,7 +871,7 @@
                 const tail = guesses.slice(-3).map(g => scoreEmoji(g.score)).join('');
                 bar = `${head}···(${guesses.length - 9} more)···${tail}`;
             }
-            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&list=${currentList}`;
+            const shareUrl = `${window.location.origin}/?seed=${currentSeed}&list=${currentList}`;
             const rankText = document.getElementById('statRank').innerText; // already live via syncStats
             return `Colordle Day ${seedToDay(currentSeed)} — ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'} 🎉\n${bar}\nRank ${rankText}\n${shareUrl}`;
         }
@@ -1114,7 +1114,7 @@
 
         document.getElementById('shareBtn').addEventListener('click', (e) => {
             // Generate link with the current seed
-            const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&list=${currentList}`;
+            const shareUrl = `${window.location.origin}/?seed=${currentSeed}&list=${currentList}`;
             copyWithFeedback(shareUrl, e.currentTarget);
         });
 
