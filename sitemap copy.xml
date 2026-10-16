@@ -19,4 +19,10 @@
       <loc>https://colordle.org/picker.html</loc>
       <priority>0.8</priority>
    </url>
+
+   <!-- Privacy Policy -->
+   <url>
+      <loc>https://colordle.org/privacy.html</loc>
+      <priority>0.3</priority>
+   </url>
 </urlset>

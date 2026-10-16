@@ -7,6 +7,9 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+  // EEA/UK/CH: no ad or analytics cookies until the visitor answers Google's consent message.
+  gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+    analytics_storage: 'denied', region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'] });
       gtag('js', new Date());
       gtag('config', 'G-H57NFG20DE');
     </script>
@@ -83,6 +86,8 @@
         #closeResult { position: absolute; top: 10px; right: 15px; cursor: pointer; opacity: 0.5; font-size: 18px; }
         #accuracy { font-size: 12px; opacity: 0.6; margin: 0; padding-top: 10px; border-top: 1px solid rgba(128,128,128,0.2); }
     </style>
+    <!-- Google AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5438842169641403" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -272,5 +277,6 @@
         }
         document.getElementById('closeResult').onclick = () => document.getElementById('resultBox').style.display='none';
     </script>
+    <footer style="text-align:center; padding:16px;"><a href="/privacy.html" style="color:#888; font-size:12px; text-decoration:underline;">Privacy policy</a></footer>
 </body>
 </html>

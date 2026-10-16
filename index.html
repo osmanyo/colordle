@@ -18,6 +18,9 @@
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  // EEA/UK/CH: no ad or analytics cookies until the visitor answers Google's consent message.
+  gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+    analytics_storage: 'denied', region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'] });
   gtag('js', new Date());
 
   gtag('config', 'G-H57NFG20DE');
@@ -344,6 +347,8 @@
             h1 { margin-top: 70px; }
         }
     </style>
+    <!-- Google AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5438842169641403" crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="updateBanner" style="display:none; position:fixed; top:0; left:0; width:100%; background:var(--accent-color); color:#000; text-align:center; padding:10px; font-size:13px; font-weight:bold; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
@@ -388,7 +393,7 @@
         <!-- Simplified Notice -->
         <p style="font-size: 11px; color: #888; margin-top: 0; margin-bottom: 12px; line-height: 1.4; text-align: left;">
             If you want a reply, please leave your email below or reach me directly at 
-            <a href="mailto:osmyo83@gmail.com" style="color: var(--accent-color); text-decoration: none; font-weight: bold;">osmyo83@gmail.com</a>.
+            <a href="mailto:osmyo83@gmail.com" style="color: var(--accent-color); text-decoration: none; font-weight: bold;">osmyo83@gmail.com</a>. <a href="/privacy.html" style="color:#888;">Privacy policy</a>
         </p>
         
         <textarea id="feedbackText" placeholder="Found a bug? Have an idea? Let me know!"></textarea>
@@ -444,6 +449,7 @@
         <p style="font-size: 15px; margin-top: 0;">
             The share button generates a URL containing your current seed and active color list, allowing others to play the exact same challenge.
         </p>
+        <p style="margin-top:24px; text-align:center;"><a href="/privacy.html" style="color:#888; font-size:12px; text-decoration:underline;">Privacy policy</a></p>
     </div>
 
         

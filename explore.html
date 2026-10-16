@@ -9,6 +9,9 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+  // EEA/UK/CH: no ad or analytics cookies until the visitor answers Google's consent message.
+  gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+    analytics_storage: 'denied', region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'] });
       gtag('js', new Date());
       gtag('config', 'G-H57NFG20DE');
     </script>
@@ -137,6 +140,8 @@
             pointer-events: none; /* Let clicks pass through to the game */
         }
     </style>
+    <!-- Google AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5438842169641403" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -231,6 +236,7 @@
         <a href="/" id="backToColordleLink" style="display: block; margin-top: 15px; color: #00d2ff; text-decoration: none; font-weight: bold; pointer-events: auto;">
             ← Back to Colordle
         </a>
+        <a href="/privacy.html" style="display:block; margin-top:10px; color:#888; font-size:12px; text-decoration:underline; pointer-events:auto;">Privacy policy</a>
     </div>
 
     <!-- HUD -->
