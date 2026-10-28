@@ -20,6 +20,16 @@
       <priority>0.8</priority>
    </url>
 
+   <!-- Guides -->
+   <url>
+      <loc>https://colordle.org/how-to-play.html</loc>
+      <priority>0.7</priority>
+   </url>
+   <url>
+      <loc>https://colordle.org/about.html</loc>
+      <priority>0.6</priority>
+   </url>
+
    <!-- Privacy Policy -->
    <url>
       <loc>https://colordle.org/privacy.html</loc>

@@ -347,7 +347,7 @@
             h1 { margin-top: 70px; }
         }
     </style>
-    <!-- Google AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5438842169641403" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -449,7 +449,7 @@
         <p style="font-size: 15px; margin-top: 0;">
             The share button generates a URL containing your current seed and active color list, allowing others to play the exact same challenge.
         </p>
-        <p style="margin-top:24px; text-align:center;"><a href="/privacy.html" style="color:#888; font-size:12px; text-decoration:underline;">Privacy policy</a></p>
+        <p style="margin-top:24px; text-align:center;"><a href="/how-to-play.html" style="color:#888; font-size:12px; text-decoration:underline;">Full guide &amp; tips</a> · <a href="/privacy.html" style="color:#888; font-size:12px; text-decoration:underline;">Privacy policy</a></p>
     </div>
 
         
@@ -525,6 +525,7 @@
         </div>  
 
         <div id="historyList" class="guess-history"></div>
+        <p style="margin:48px 0 0; text-align:center; font-size:12px; color:#555;"><a href="/how-to-play.html" style="color:#777; text-decoration:none;">How to play</a> · <a href="/about.html" style="color:#777; text-decoration:none;">About</a> · <a href="/privacy.html" style="color:#777; text-decoration:none;">Privacy</a></p>
     </div>
 
     <div id="seedControl">
@@ -567,9 +568,7 @@
 
     <script type="module">
         // 1. ALL IMPORTS GO HERE AT THE TOP
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, updateDoc, increment, onSnapshot, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
+        import { converter, differenceCiede2000, parse } from './vendor/culori.min.js'; // self-hosted: no network needed
         import { ALL_COLORS, setupDictionarySelector, isKnownList } from './dictionary.js';
         import { handleMigrationHash, showMigrationBannerIfNeeded, initBackupUI } from './migration.js';
 
@@ -586,8 +585,22 @@
             appId: "1:763118809880:web:fa6003f660c495eb55a46d",
             measurementId: "G-50GQQV2KZN"
         };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // Firebase only powers community stats, the banner and feedback. It loads in the
+        // background so the game starts instantly offline or when Google is blocked/slow.
+        // Everything that needs it awaits `firebaseReady` and quietly skips if it is null.
+        let db, doc, setDoc, updateDoc, increment, onSnapshot, getDoc, serverTimestamp;
+        const FIREBASE_SDK = 'https://www.gstatic.com/firebasejs/10.7.1/';
+        const firebaseReady = Promise.all([
+            import(FIREBASE_SDK + 'firebase-app.js'),
+            import(FIREBASE_SDK + 'firebase-firestore.js'),
+        ]).then(([appSdk, fs]) => {
+            ({ doc, setDoc, updateDoc, increment, onSnapshot, getDoc, serverTimestamp } = fs);
+            db = fs.getFirestore(appSdk.initializeApp(firebaseConfig));
+            return true;
+        }).catch((e) => {
+            console.warn('Stats unavailable (offline or blocked) - playing without them.', e);
+            return false;
+        });
 
         // 3. REST OF GAME LOGIC
         const CSV_URL = 'colornames.csv';
@@ -751,6 +764,7 @@
             if (deltaE < 0.1) {
                 gameState.won = true;
                 const duration = Math.floor((Date.now() - gameState.startTime) / 1000);
+                gameState.duration = duration;
                 submitWinToFirebase(duration); 
                 revealWin(true);
             }
@@ -902,14 +916,29 @@
         let globalAvgTries = null;
         let globalWinners = 0;
         // --- FIREBASE STATS FUNCTIONS ---
-       function syncStats() {
-        
+       async function syncStats() {
             if (unsubscribeStats) {
                 unsubscribeStats();
+                unsubscribeStats = null;
+            }
+            // Don't show the previous puzzle's numbers while this one's are loading (or offline).
+            globalWinners = 0;
+            globalAvgTries = null;
+            document.getElementById('statWinners').innerText = '–';
+            document.getElementById('statAvg').innerText = '–';
+            document.getElementById('statRank').innerText = gameState.rank ? `#${gameState.rank}` : '--';
+
+            if (!(await firebaseReady)) return;
+            const seedAtStart = currentSeed, listAtStart = currentList;
+            if (unsubscribeStats) unsubscribeStats(); // another syncStats ran while we waited
+
+            // A win made while offline is counted once the connection is back.
+            if (gameState.won && !gameState.submitted && gameState.duration !== undefined) {
+                submitWinToFirebase(gameState.duration);
             }
 
-            
             unsubscribeStats = onSnapshot(getStatsRef(), (snap) => {
+                if (currentSeed !== seedAtStart || currentList !== listAtStart) return; // stale puzzle
                 if (snap.exists()) {
                     const data = snap.data();
                     globalWinners = data.winnerCount || 0;
@@ -934,6 +963,7 @@
         }
 
         async function logAttemptToFirebase(colorName) {
+            if (!(await firebaseReady)) return;
 
             
         const statsRef = getStatsRef();
@@ -962,6 +992,7 @@
     }
         async function submitWinToFirebase(seconds) {
             if (gameState.submitted) return; 
+            if (!(await firebaseReady)) return;
 
             const statsRef = getStatsRef();
             const tries = gameState.guesses.length;
@@ -1219,6 +1250,13 @@
             
             submitFeedbackBtn.innerText = "Sending...";
             submitFeedbackBtn.disabled = true;
+
+            if (!(await firebaseReady)) {
+                // Keep their text so nothing is lost; they can retry once back online.
+                submitFeedbackBtn.innerText = "Offline - try again later";
+                setTimeout(() => { submitFeedbackBtn.innerText = "Send"; submitFeedbackBtn.disabled = false; }, 2500);
+                return;
+            }
             
             try {
                 let currentList = localStorage.getItem('colordle_list') || 'colornames.csv';
@@ -1263,6 +1301,7 @@
         }
 
         async function checkSystemUpdates() {
+            if (!(await firebaseReady)) return;
 
             const banner = document.getElementById('updateBanner');
             const bannerText = document.getElementById('bannerText');

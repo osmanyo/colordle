@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H57NFG20DE"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+  // EEA/UK/CH: no ad or analytics cookies until the visitor answers Google's consent message.
+  gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+    analytics_storage: 'denied', region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'] });
+      gtag('js', new Date());
+      gtag('config', 'G-H57NFG20DE');
+    </script>
+
+    <title>How to Play Colordle: Rules, Scoring and Tips</title>
+    <meta name="description" content="Learn how to play Colordle, the daily color guessing game: how the score works, how hints unlock, color lists, strategy tips and FAQ.">
+    <meta property="og:title" content="How to Play Colordle: Rules, Scoring and Tips">
+    <meta property="og:description" content="Learn how to play Colordle, the daily color guessing game: how the score works, how hints unlock, color lists, strategy tips and FAQ.">
+    <meta property="og:url" content="https://colordle.org/how-to-play.html">
+    <meta property="og:type" content="article">
+    <link rel="canonical" href="https://colordle.org/how-to-play.html">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='red'%3E%3Canimate attributeName='stop-color' values='red;violet;blue;cyan;green;yellow;red' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3Cstop offset='100%25' stop-color='yellow'%3E%3Canimate attributeName='stop-color' values='yellow;red;violet;blue;cyan;green;yellow' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext y='.9em' font-size='90' font-family='Arial, sans-serif' font-weight='bold' fill='url(%23g)'%3EC%3C/text%3E%3C/svg%3E"><style>
+    <style>
+        :root { color-scheme: dark; --accent: #00d2ff; }
+        body { margin: 0; background: #121212; color: #ddd; font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.7; }
+        nav { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; max-width: 760px; margin: 0 auto; padding: 18px 20px 0; font-size: 14px; }
+        nav a { color: #aaa; text-decoration: none; }
+        nav a.play { color: var(--accent); font-weight: bold; margin-right: auto; }
+        nav a[aria-current] { color: #fff; }
+        main { max-width: 760px; margin: 0 auto; padding: 24px 20px 64px; }
+        h1 { color: #fff; font-size: 30px; line-height: 1.25; margin: 10px 0 8px; }
+        .lead { color: #aaa; font-size: 17px; margin: 0 0 28px; }
+        h2 { color: #fff; font-size: 20px; margin: 40px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #333; }
+        h3 { color: #eee; font-size: 16px; margin: 22px 0 4px; }
+        p, li { font-size: 15.5px; }
+        a { color: var(--accent); }
+        table { border-collapse: collapse; width: 100%; font-size: 14.5px; margin: 10px 0; }
+        th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #2a2a2a; vertical-align: top; }
+        th { color: #aaa; font-weight: 600; }
+        .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; border: 1px solid #444; }
+        .cta { display: inline-block; margin-top: 8px; padding: 10px 18px; background: var(--accent); color: #000; font-weight: bold; border-radius: 6px; text-decoration: none; }
+        footer { max-width: 760px; margin: 0 auto; padding: 0 20px 40px; font-size: 13px; color: #777; }
+        footer a { color: #888; }
+    </style>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5438842169641403" crossorigin="anonymous"></script>
+</head>
+<body>
+<nav><a class="play" href="/">← Play Colordle</a><a href="/how-to-play.html" aria-current="page">How to play</a><a href="/about.html">About</a><a href="/explore.html">3D Explorer</a><a href="/picker.html">Color Picker</a></nav>
+<main>
+<h1>How to Play Colordle</h1>
+<p class="lead">Colordle is a daily color-guessing game. Everyone gets the same hidden color each day, and your job is to find its exact name using as few guesses as possible.</p>
+
+<h2>The goal</h2>
+<p>Every day there is one secret color, picked from a list of named colors. Type a color name (like <i>Sage</i>, <i>Burnt Orange</i> or <i>Midnight Blue</i>) or a hex code (like <code>#4682B4</code>) and press <b>Guess</b>. Each guess gets a score that tells you how close you are. You win when you hit the exact color: a score of 100%.</p>
+<p>As you type, the box suggests matching names from the active color list, so you don't need to know every name by heart. Exploring the suggestions is part of the fun: there are colors called <i>Elephant in the Room</i>, <i>Freshly Baked</i> and <i>Charismatic</i>.</p>
+
+<h2>How the score works</h2>
+<p>Your score is not based on whether the name "sounds" right. It measures how similar the two colors <b>look</b> to the human eye. Colordle converts both colors into the CIELAB color space and computes their perceptual distance with the <b>CIEDE2000</b> formula (often written ΔE<sub>00</sub>). The score is simply:</p>
+<p style="text-align:center; font-size:17px; color:#fff;"><b>score = 100 − ΔE<sub>00</sub></b> &nbsp;(never below 0)</p>
+<p>So a guess that is visually very close scores in the high 90s, and an opposite color scores near 0. As a rough guide:</p>
+<table>
+<tr><th>Score</th><th>What it means</th></tr>
+<tr><td>100%</td><td>Exact match. You win.</td></tr>
+<tr><td>98–99.9%</td><td>Almost impossible to tell apart, even side by side.</td></tr>
+<tr><td>90–98%</td><td>Clearly the same family of color; you're in the right neighborhood.</td></tr>
+<tr><td>70–90%</td><td>Related, but a visibly different shade, lightness or hue.</td></tr>
+<tr><td>Below 70%</td><td>A different color altogether. Try another region.</td></tr>
+</table>
+<p>Because the score follows perception rather than names, two colors with completely different names can score 99%, and two "blues" can be far apart. The <a href="/about.html">About page</a> explains the color science in more detail.</p>
+
+<h2>Hints</h2>
+<p>When you get stuck, hints tell you which way to move. Once hints are unlocked, a <b>?</b> button appears on each guess and shows directions such as:</p>
+<ul>
+<li><b>Lighter ↑ / Darker ↓</b>: the target is lighter or darker than your guess.</li>
+<li><b>Redder +a / Greener −a</b>: the target sits further toward red or toward green.</li>
+<li><b>Yellower +b / Bluer −b</b>: the target sits further toward yellow or toward blue.</li>
+</ul>
+<p>Hints are earned, not free: they unlock once you have made at least half as many guesses as the day's average winner. If nobody has solved the day yet, they unlock after 50 guesses.</p>
+
+<h2>A new color every day</h2>
+<p>A new puzzle starts every day at <b>midnight UTC</b>. Each puzzle has a day number, shown in the <b>Day</b> box at the bottom of the screen. You can type an earlier day number and press <b>Load</b> to play any past puzzle, or press the dice button to jump to a random past day. Future days can't be loaded.</p>
+<p>Each day's color is the same for every player in the world, so you can compare results with friends.</p>
+
+<h2>Color lists</h2>
+<p>Colordle can use many different color dictionaries, chosen from the list menu. Each list has its own daily color and its own leaderboard. Some favorites:</p>
+<ul>
+<li><b>Full List</b>: about 30,000 crowd-sourced color names. The daily target is chosen from a hand-picked set of about 4,700 distinctive names, so you won't be asked to find an obscure near-duplicate.</li>
+<li><b>Basic</b> and <b>HTML / CSS</b>: short lists of standard colors, perfect for a quick game.</li>
+<li><b>XKCD Survey</b>: the names people actually use, from a large online color-naming survey.</li>
+<li><b>Historical and cultural lists</b>: Japanese and Chinese traditional colors, Werner's Nomenclature (used by Charles Darwin), Ridgway's bird colors, Le Corbusier's architectural palette, Sanzo Wada's color dictionary, and color names in several languages.</li>
+</ul>
+
+<h2>Community stats</h2>
+<p>Under the guess box you'll see how many people have solved today's color, their average number of tries, and your rank once you win (rank #1 is the first player to solve that day). These numbers are anonymous totals: no account, name or email is needed.</p>
+
+<h2>Tools that help</h2>
+<h3>3D Color Explorer</h3>
+<p>Click the arrow icon next to any guess to teleport into the <a href="/explore.html">3D Explorer</a>, a flyable map of every named color arranged by how it looks. Seeing which named colors sit around your best guess is a great way to find candidates you hadn't thought of.</p>
+<h3>Color Name Picker</h3>
+<p>The <a href="/picker.html">Color Name Picker</a> lets you upload a photo and click anywhere on it to find the closest named color. Handy for learning names, and for settling arguments about what color something really is.</p>
+
+<h2>Strategy tips</h2>
+<ol>
+<li><b>Start broad.</b> Open with very different colors (a red, a blue, a green, a grey) and keep the one with the best score.</li>
+<li><b>Fix lightness first.</b> Lightness changes the score a lot. Once a guess is in the 80s, try a lighter and a darker version of it.</li>
+<li><b>Use hex codes to probe.</b> You can guess any hex code, even if it isn't a named color. It won't win, but its score tells you whether you're getting warmer.</li>
+<li><b>Then switch to names.</b> The answer is always a name from the active list, so once you're above 95%, look through nearby names in the suggestions or the 3D Explorer.</li>
+<li><b>Mind the screen.</b> Very dark or very saturated colors can look different on different screens; trust the score more than your eyes.</li>
+</ol>
+
+<h2>Sharing and saving</h2>
+<p>After you win, press <b>Share Result</b> to copy a spoiler-free summary (your number of tries, a row of colored squares and a link to the same puzzle). Your progress is saved automatically in your browser. To move it to another device, open <b>Saved Games</b> and use <b>Copy backup code</b>, then paste the code on the other device.</p>
+
+<h2>FAQ</h2>
+<h3>Why did a color that looks close get a low score?</h3>
+<p>Our eyes are easily fooled by surrounding colors and screen settings. The score uses a standard model of human vision, so it is consistent for everyone, even when two colors "feel" closer than they measure.</p>
+<h3>My color name wasn't accepted. Why?</h3>
+<p>Names must exist in the active color list. Try a different spelling, pick from the suggestions, or type a hex code instead.</p>
+<h3>Does Colordle work offline?</h3>
+<p>Yes. Once the page has loaded, the puzzle and your guesses work without a connection. Community stats fill in when you're back online, and an offline win is counted then.</p>
+<h3>Is it free?</h3>
+<p>Yes. Colordle is free to play, with no account needed. Ads help cover the costs of running it.</p>
+
+<p><a class="cta" href="/">Play today's Colordle</a></p>
+
+</main>
+<footer>Colordle · <a href="/how-to-play.html">How to play</a> · <a href="/about.html">About</a> · <a href="/privacy.html">Privacy policy</a> · Contact: <a href="mailto:osmyo83@gmail.com">osmyo83@gmail.com</a></footer>
+</body>
+</html>

@@ -140,7 +140,7 @@
             pointer-events: none; /* Let clicks pass through to the game */
         }
     </style>
-    <!-- Google AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5438842169641403" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -228,7 +228,8 @@
             <b>↑ Up/Down (L):</b> Lightness<br>
             <b>↔ X Axis (A):</b> Green vs Red<br>
             <b>↔ Z Axis (B):</b> Blue vs Yellow<br><br>
-            You can teleport to a given color name from the settings on the top right.
+            You can teleport to a given color name from the settings on the top right.<br><br>
+            Each dot is a named color placed by how it looks, so neighbors are colors people perceive as similar. Colordle scores guesses by this same perceptual distance. <a href="/about.html" style="color:#00d2ff; pointer-events:auto;">How it works</a>
         </div>
 
         <p id="startMsg" style="margin-top:20px; font-size:0.9em; color:#888;">Click to Start. Press <b>ESC</b> for Settings.</p>
@@ -251,7 +252,7 @@
     <script type="module">
         import * as THREE from 'https://esm.sh/three@0.160.0';
         import { PointerLockControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
-        import { converter, parse } from 'https://esm.sh/culori@3';
+        import { converter, parse } from './vendor/culori.min.js';
         import Stats from 'https://esm.sh/three@0.160.0/examples/jsm/libs/stats.module.js';
         import { ALL_COLORS, setupDictionarySelector } from './dictionary.js';
 

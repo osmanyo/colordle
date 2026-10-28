@@ -35,8 +35,14 @@
         :root { --bg: #121213; --text: #fff; --accent: #00d2ff; --border: #3a3a3c; }
         body { 
             background: var(--bg); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; 
-            margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            margin: 0; padding: 0;
         }
+
+        /* The tool fills the first screen; the explanation below is reached by scrolling. */
+        #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; position: relative; overflow: hidden; }
+        #toolInfo { max-width: 720px; margin: 0 auto; padding: 32px 20px 24px; line-height: 1.7; color: #ccc; font-size: 15px; }
+        #toolInfo h1 { font-size: 22px; color: #fff; } #toolInfo h2 { font-size: 17px; color: #fff; margin-top: 26px; }
+        #toolInfo a { color: #00d2ff; }
 
         /* --- TOOLBAR --- */
         #toolbar {
@@ -86,11 +92,11 @@
         #closeResult { position: absolute; top: 10px; right: 15px; cursor: pointer; opacity: 0.5; font-size: 18px; }
         #accuracy { font-size: 12px; opacity: 0.6; margin: 0; padding-top: 10px; border-top: 1px solid rgba(128,128,128,0.2); }
     </style>
-    <!-- Google AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5438842169641403" crossorigin="anonymous"></script>
 </head>
 <body>
-
+  <div id="app">
     <div id="toolbar">
         <div class="toolbar-group">
             <a href="/" class="btn btn-outline">← Back</a>
@@ -121,6 +127,24 @@
     <div style="position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 10px; color: #444; pointer-events: none;">
         Images are processed locally and never sent to a server.
     </div>
+  </div>
+    <section id="toolInfo">
+        <h1>Color Name Picker: find the name of any color in a photo</h1>
+        <p>Upload a photo, then click or tap anywhere on it. The picker reads the color at that spot and finds the closest named color in the selected list, from the 30,000-name full list to historical palettes like Werner's Nomenclature or Japanese traditional colors.</p>
+        <h2>How to use it</h2>
+        <ol>
+            <li>Press <b>Upload</b> and choose an image from your device.</li>
+            <li>Choose a color list with the <b>List</b> menu at the top.</li>
+            <li>Click a spot on the image. Use the <b>Area</b> slider to average a larger patch instead of a single pixel, which helps with noisy photos, fabric or skin.</li>
+            <li>Read the result: your exact pick, the nearest named color, and how close the match is.</li>
+            <li>Press <b>View Similar Colors in 3D</b> to jump into the <a href="/explore.html">3D Explorer</a> and see every named color around it.</li>
+        </ol>
+        <h2>How the match is calculated</h2>
+        <p>Matching uses perceptual color difference (CIEDE2000 in the CIELAB color space), the same measure the <a href="/">Colordle</a> game uses to score guesses. That means the result is the name whose color <i>looks</i> most similar to the human eye, not just the one with the nearest RGB numbers. <a href="/about.html">Read more about the color science.</a></p>
+        <h2>Privacy</h2>
+        <p>Your images never leave your device: they are processed entirely in your browser and are not uploaded anywhere.</p>
+    </section>
+
 
     <div id="resultBox">
         <div id="closeResult">✕</div>
@@ -147,7 +171,7 @@
     <canvas id="procCanvas" style="display:none;"></canvas>
 
     <script type="module">
-        import { converter, differenceCiede2000, parse } from 'https://esm.sh/culori@3';
+        import { converter, differenceCiede2000, parse } from './vendor/culori.min.js';
         import { ALL_COLORS, setupDictionarySelector } from './dictionary.js';
 
         const toLab = converter('lab');
@@ -277,6 +301,6 @@
         }
         document.getElementById('closeResult').onclick = () => document.getElementById('resultBox').style.display='none';
     </script>
-    <footer style="text-align:center; padding:16px;"><a href="/privacy.html" style="color:#888; font-size:12px; text-decoration:underline;">Privacy policy</a></footer>
+    <footer style="text-align:center; padding:16px;"><a href="/how-to-play.html" style="color:#888; font-size:12px; text-decoration:underline;">How to play Colordle</a> · <a href="/about.html" style="color:#888; font-size:12px; text-decoration:underline;">About</a> · <a href="/privacy.html" style="color:#888; font-size:12px; text-decoration:underline;">Privacy policy</a></footer>
 </body>
 </html>

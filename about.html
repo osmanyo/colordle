@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H57NFG20DE"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+  // EEA/UK/CH: no ad or analytics cookies until the visitor answers Google's consent message.
+  gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+    analytics_storage: 'denied', region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'] });
+      gtag('js', new Date());
+      gtag('config', 'G-H57NFG20DE');
+    </script>
+
+    <title>About Colordle: The Color Science Behind the Game</title>
+    <meta name="description" content="How Colordle measures color similarity with CIELAB and CIEDE2000, and where its color names come from, from the XKCD survey to Werner's Nomenclature.">
+    <meta property="og:title" content="About Colordle: The Color Science Behind the Game">
+    <meta property="og:description" content="How Colordle measures color similarity with CIELAB and CIEDE2000, and where its color names come from, from the XKCD survey to Werner's Nomenclature.">
+    <meta property="og:url" content="https://colordle.org/about.html">
+    <meta property="og:type" content="article">
+    <link rel="canonical" href="https://colordle.org/about.html">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='red'%3E%3Canimate attributeName='stop-color' values='red;violet;blue;cyan;green;yellow;red' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3Cstop offset='100%25' stop-color='yellow'%3E%3Canimate attributeName='stop-color' values='yellow;red;violet;blue;cyan;green;yellow' dur='4s' repeatCount='indefinite' /%3E%3C/stop%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext y='.9em' font-size='90' font-family='Arial, sans-serif' font-weight='bold' fill='url(%23g)'%3EC%3C/text%3E%3C/svg%3E"><style>
+    <style>
+        :root { color-scheme: dark; --accent: #00d2ff; }
+        body { margin: 0; background: #121212; color: #ddd; font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.7; }
+        nav { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; max-width: 760px; margin: 0 auto; padding: 18px 20px 0; font-size: 14px; }
+        nav a { color: #aaa; text-decoration: none; }
+        nav a.play { color: var(--accent); font-weight: bold; margin-right: auto; }
+        nav a[aria-current] { color: #fff; }
+        main { max-width: 760px; margin: 0 auto; padding: 24px 20px 64px; }
+        h1 { color: #fff; font-size: 30px; line-height: 1.25; margin: 10px 0 8px; }
+        .lead { color: #aaa; font-size: 17px; margin: 0 0 28px; }
+        h2 { color: #fff; font-size: 20px; margin: 40px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #333; }
+        h3 { color: #eee; font-size: 16px; margin: 22px 0 4px; }
+        p, li { font-size: 15.5px; }
+        a { color: var(--accent); }
+        table { border-collapse: collapse; width: 100%; font-size: 14.5px; margin: 10px 0; }
+        th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #2a2a2a; vertical-align: top; }
+        th { color: #aaa; font-weight: 600; }
+        .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; border: 1px solid #444; }
+        .cta { display: inline-block; margin-top: 8px; padding: 10px 18px; background: var(--accent); color: #000; font-weight: bold; border-radius: 6px; text-decoration: none; }
+        footer { max-width: 760px; margin: 0 auto; padding: 0 20px 40px; font-size: 13px; color: #777; }
+        footer a { color: #888; }
+    </style>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5438842169641403" crossorigin="anonymous"></script>
+</head>
+<body>
+<nav><a class="play" href="/">← Play Colordle</a><a href="/how-to-play.html">How to play</a><a href="/about.html" aria-current="page">About</a><a href="/explore.html">3D Explorer</a><a href="/picker.html">Color Picker</a></nav>
+<main>
+<h1>About Colordle</h1>
+<p class="lead">Colordle is a free daily color-guessing game built around one question: how close do two colors really look? Here's the color science behind it, and where all those color names come from.</p>
+
+<h2>What Colordle is</h2>
+<p>Each day, Colordle hides one named color. Players guess names or hex codes and get a score showing how visually similar each guess is to the target. Around the game there are two companion tools: a <a href="/explore.html">3D explorer</a> that lets you fly through tens of thousands of named colors, and a <a href="/picker.html">color name picker</a> that finds the name of any color in a photo.</p>
+<p>Colordle is made and maintained by an independent developer, Osmanyo, based in France, as a passion project at the meeting point of color science, language and games. New lists and features are added over time, many of them suggested by players through the feedback button.</p>
+
+<h2>Why "close" is harder than it sounds</h2>
+<p>Computers usually describe colors in <b>RGB</b>: amounts of red, green and blue light, from 0 to 255 each. It's tempting to measure how different two colors are by measuring the distance between their RGB numbers, but that gives poor results. Human vision doesn't respond to those three channels equally: we are far more sensitive to changes in some greens than in deep blues, and a small change in lightness can look bigger than a large change in saturation. Two pairs of colors that are the same "RGB distance" apart can look nearly identical in one case and obviously different in the other.</p>
+
+<h2>CIELAB: a color space built around human vision</h2>
+<p>In 1976 the International Commission on Illumination (CIE) introduced <b>CIELAB</b>, a color space designed so that distances roughly match what people perceive. Every color gets three coordinates:</p>
+<ul>
+<li><b>L*</b>: lightness, from black (0) to white (100).</li>
+<li><b>a*</b>: the green (negative) to red (positive) axis.</li>
+<li><b>b*</b>: the blue (negative) to yellow (positive) axis.</li>
+</ul>
+<p>These axes follow the "opponent" way our visual system works: we never see a color that is both reddish and greenish at the same time, or both yellowish and bluish. That's also why Colordle's hints talk about <i>lighter/darker</i>, <i>redder/greener</i> and <i>yellower/bluer</i>, and why the <a href="/explore.html">3D Explorer</a> is laid out along exactly these three axes.</p>
+
+<h2>Measuring the difference: ΔE and CIEDE2000</h2>
+<p>The difference between two colors in CIELAB is called <b>ΔE</b> ("delta E"). The original 1976 formula was a straight-line distance between the two points. It turned out to be uneven in practice: it over-counts differences in vivid, saturated colors and handles blues poorly. Later formulas corrected this, and the current standard, <b>CIEDE2000</b> (ΔE<sub>00</sub>), adds weightings for lightness, chroma (colorfulness) and hue, plus a special correction for the blue region.</p>
+<p>A ΔE<sub>00</sub> of about 1 is close to the smallest difference most people can notice side by side. Colordle's score is <b>100 − ΔE<sub>00</sub></b>, so every point of score you gain means your guess looks measurably closer to the target. The calculations are done in your browser with the open-source <a href="https://culorijs.org/" target="_blank" rel="noopener">culori</a> color library.</p>
+
+<h2>Where the color names come from</h2>
+<p>Naming colors is as much about culture and history as about physics. Colordle includes lists from very different traditions:</p>
+<table>
+<tr><th>List</th><th>Background</th></tr>
+<tr><td>Full List</td><td>About 30,000 names gathered by the open-source <a href="https://github.com/meodai/color-names" target="_blank" rel="noopener">color-names</a> project, from paint catalogs, design tools and contributors.</td></tr>
+<tr><td>XKCD Survey</td><td>The most common names from Randall Munroe's 2010 online survey, where hundreds of thousands of people named random colors on their own screens.</td></tr>
+<tr><td>HTML / CSS, X11</td><td>The standard named colors web browsers understand, many inherited from the X Window System of the 1980s.</td></tr>
+<tr><td>Werner's Nomenclature</td><td>An 1814 guide used by naturalists to describe specimens consistently. Charles Darwin carried it on the voyage of the Beagle.</td></tr>
+<tr><td>Ridgway's</td><td>Robert Ridgway's 1912 color standard, created for describing birds and still referenced by ornithologists.</td></tr>
+<tr><td>Sanzo Wada</td><td>Colors from the Japanese artist's 1930s dictionary of color combinations, beloved by designers today.</td></tr>
+<tr><td>Le Corbusier</td><td>The architect's palette of colors chosen for use in buildings.</td></tr>
+<tr><td>Japanese &amp; Chinese traditional</td><td>Historic color names tied to dyes, plants, seasons and court customs.</td></tr>
+<tr><td>Languages</td><td>Color names in Turkish, French, Spanish, German, Russian, Hindi, Korean and Persian.</td></tr>
+<tr><td>RAL</td><td>A European industrial color standard used for paints and coatings.</td></tr>
+</table>
+<p>Online lists are loaded through the <a href="https://color.pizza/" target="_blank" rel="noopener">Color Pizza</a> API by the same author as color-names. Thank you to everyone who maintains these open datasets.</p>
+
+<h2>Built with</h2>
+<p>Colordle is a small, fast website written in plain JavaScript. The 3D Explorer uses <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>; color math uses <a href="https://culorijs.org/" target="_blank" rel="noopener">culori</a>; anonymous community stats are stored with Google Firebase. Your game progress stays in your own browser. See the <a href="/privacy.html">privacy policy</a> for details.</p>
+
+<h2>Contact</h2>
+<p>Found a bug, have an idea for a new color list, or want to say hi? Use the feedback button in the game or email <a href="mailto:osmyo83@gmail.com">osmyo83@gmail.com</a>.</p>
+
+<p><a class="cta" href="/">Play today's Colordle</a></p>
+
+</main>
+<footer>Colordle · <a href="/how-to-play.html">How to play</a> · <a href="/about.html">About</a> · <a href="/privacy.html">Privacy policy</a> · Contact: <a href="mailto:osmyo83@gmail.com">osmyo83@gmail.com</a></footer>
+</body>
+</html>
