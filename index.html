@@ -212,6 +212,11 @@
         .guess-name { flex-grow: 1; text-align: left; }
         .guess-score { width: 60px; text-align: right; }
 
+        /* Footer links: pushed to the bottom of the page (body is a full-height flex column).
+           Desktop: same row as the Day bar and List box. Phones: just above the full-width Day bar. */
+        #siteLinks { margin-top: auto; padding: 0 16px 37px; text-align: center; font-size: 12px; color: #555; }
+        @media (max-width: 768px) { #siteLinks { padding-bottom: 92px; } }
+
         /* --- SEED CONTROL --- */
         #seedControl, #dictControl {
             position: fixed;
@@ -528,7 +533,7 @@
         <div id="historyList" class="guess-history"></div>
     </div>
 
-    <footer id="siteLinks" style="margin-top:auto; padding:0 16px 92px; text-align:center; font-size:12px; color:#555;"><a href="/how-to-play.html" style="color:#777; text-decoration:none;">How to play</a> · <a href="/about.html" style="color:#777; text-decoration:none;">About</a> · <a href="/privacy.html" style="color:#777; text-decoration:none;">Privacy</a></footer>
+    <footer id="siteLinks"><a href="/how-to-play.html" style="color:#777; text-decoration:none;">How to play</a> · <a href="/about.html" style="color:#777; text-decoration:none;">About</a> · <a href="/privacy.html" style="color:#777; text-decoration:none;">Privacy</a></footer>
 
     <div id="seedControl">
         <button id="homeBtn" class="icon-btn" title="Back to Today's Color" style="margin-right: 5px;">
